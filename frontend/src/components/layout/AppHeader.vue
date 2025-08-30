@@ -1,106 +1,124 @@
 <template>
-  <a-layout-header class="app-header">
+  <el-header class="app-header">
     <div class="header-content">
       <div class="header-left">
-        <div class="logo">
-          <img src="/logo.svg" alt="食光家" />
+        <div class="logo" @click="goHome">
+          <img src="/logo.png" alt="食光家" />
           <span class="logo-text">食光家</span>
         </div>
       </div>
-
+      
       <div class="header-center">
-        <a-input-search
-          v-model:value="searchQuery"
-          placeholder="搜索食材、食谱..."
-          size="large"
+        <el-input
+          v-model="searchQuery"
+          placeholder="搜索食谱、食材..."
           class="search-input"
-          @search="handleSearch"
+          @keyup.enter="handleSearch"
         >
           <template #prefix>
-            <SearchOutlined />
+            <el-icon><Search /></el-icon>
           </template>
-        </a-input-search>
+        </el-input>
       </div>
-
+      
       <div class="header-right">
-        <a-space>
-          <a-button type="text" class="header-btn">
-            <template #icon>
-              <BellOutlined />
-            </template>
-          </a-button>
-
-          <a-dropdown>
-            <a-button type="text" class="header-btn user-dropdown">
-              <a-avatar :src="authStore.user?.avatar" :size="32">
-                {{ authStore.user?.username?.charAt(0)?.toUpperCase() }}
-              </a-avatar>
-              <span class="username">{{ authStore.user?.username }}</span>
-              <DownOutlined />
-            </a-button>
-            <template #overlay>
-              <a-menu>
-                <a-menu-item key="profile" @click="router.push('/profile')">
-                  <UserOutlined />
+        <el-space>
+          <el-badge :value="3" class="notification-badge">
+            <el-button type="text" circle>
+              <el-icon><Bell /></el-icon>
+            </el-button>
+          </el-badge>
+          
+          <el-dropdown @command="handleCommand">
+            <el-button type="text" class="user-dropdown">
+              <el-avatar :src="user?.avatar" :size="32">
+                {{ user?.username?.charAt(0)?.toUpperCase() }}
+              </el-avatar>
+              <span class="username">{{ user?.username }}</span>
+              <el-icon><ArrowDown /></el-icon>
+            </el-button>
+            
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item command="profile">
+                  <el-icon><User /></el-icon>
                   个人资料
-                </a-menu-item>
-                <a-menu-item key="settings" @click="router.push('/family')">
-                  <SettingOutlined />
-                  家庭设置
-                </a-menu-item>
-                <a-menu-divider />
-                <a-menu-item key="logout" @click="handleLogout">
-                  <LogoutOutlined />
+                </el-dropdown-item>
+                <el-dropdown-item command="settings">
+                  <el-icon><Setting /></el-icon>
+                  设置
+                </el-dropdown-item>
+                <el-dropdown-item divided command="logout">
+                  <el-icon><SwitchButton /></el-icon>
                   退出登录
-                </a-menu-item>
-              </a-menu>
+                </el-dropdown-item>
+              </el-dropdown-menu>
             </template>
-          </a-dropdown>
-        </a-space>
+          </el-dropdown>
+        </el-space>
       </div>
     </div>
-  </a-layout-header>
+  </el-header>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { message } from 'ant-design-vue'
+import { ElMessage } from 'element-plus'
 import { 
-  SearchOutlined, 
-  BellOutlined, 
-  DownOutlined, 
-  UserOutlined, 
-  SettingOutlined, 
-  LogoutOutlined 
-} from '@ant-design/icons-vue'
+  Search, 
+  Bell, 
+  ArrowDown, 
+  User, 
+  Setting, 
+  SwitchButton 
+} from '@element-plus/icons-vue'
 import { useAuthStore } from '@/stores/authStore'
 
 const router = useRouter()
 const authStore = useAuthStore()
 
 const searchQuery = ref('')
+const user = computed(() => authStore.user)
+
+const goHome = () => {
+  router.push('/dashboard')
+}
 
 const handleSearch = (value: string) => {
   if (value.trim()) {
     // 实现搜索功能
     console.log('搜索:', value)
-    message.info(`搜索: ${value}`)
+    ElMessage.info(`搜索: ${value}`)
+  }
+}
+
+const handleCommand = (command: string) => {
+  switch (command) {
+    case 'profile':
+      router.push('/profile')
+      break
+    case 'settings':
+      ElMessage.info('设置功能开发中...')
+      break
+    case 'logout':
+      handleLogout()
+      break
   }
 }
 
 const handleLogout = async () => {
   try {
     await authStore.logout()
-    message.success('已退出登录')
+    ElMessage.success('已退出登录')
     router.push('/login')
   } catch (error) {
-    message.error('退出登录失败')
+    ElMessage.error('退出登录失败')
   }
 }
 </script>
 
-<style scoped>
+<style lang="less" scoped>
 .app-header {
   background: white;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -134,6 +152,10 @@ const handleLogout = async () => {
   align-items: center;
   gap: 12px;
   cursor: pointer;
+  
+  &:hover {
+    opacity: 0.8;
+  }
 }
 
 .logo img {
@@ -158,19 +180,7 @@ const handleLogout = async () => {
 }
 
 .search-input {
-  border-radius: 20px;
-}
-
-.search-input :deep(.ant-input) {
-  border-radius: 20px;
-  border: 2px solid #f0f0f0;
-  transition: all 0.3s ease;
-}
-
-.search-input :deep(.ant-input:focus),
-.search-input :deep(.ant-input:hover) {
-  border-color: #667eea;
-  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+  width: 100%;
 }
 
 .header-right {
@@ -178,35 +188,24 @@ const handleLogout = async () => {
   align-items: center;
 }
 
-.header-btn {
-  height: 40px;
-  border: none;
-  color: #666;
-  transition: all 0.3s ease;
-}
-
-.header-btn:hover {
-  color: #667eea;
-  background: rgba(102, 126, 234, 0.1);
+.notification-badge {
+  margin-right: 16px;
 }
 
 .user-dropdown {
   display: flex;
   align-items: center;
   gap: 8px;
+  height: 40px;
   padding: 0 12px;
-  border-radius: 20px;
 }
 
 .username {
-  font-size: 14px;
-  color: #1a1a1a;
-  max-width: 100px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  color: #333;
+  font-weight: 500;
 }
 
+// 移动端适配
 @media (max-width: 768px) {
   .header-content {
     padding: 0 16px;
@@ -216,12 +215,22 @@ const handleLogout = async () => {
     margin: 0 16px;
   }
   
-  .logo-text {
+  .username {
     display: none;
   }
   
-  .username {
+  .logo-text {
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 480px) {
+  .header-center {
     display: none;
+  }
+  
+  .logo-text {
+    font-size: 16px;
   }
 }
 </style>

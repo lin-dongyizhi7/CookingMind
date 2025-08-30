@@ -8,35 +8,27 @@
  */
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
-import { createRouter, createWebHistory } from 'vue-router'
-import Antd from 'ant-design-vue'
-import 'ant-design-vue/dist/reset.css'
-import zhCN from 'ant-design-vue/es/locale/zh_CN'
-import dayjs from 'dayjs'
-import 'dayjs/locale/zh-cn'
+import ElementPlus from 'element-plus'
+import 'element-plus/dist/index.css'
+import * as ElementPlusIconsVue from '@element-plus/icons-vue'
+import zhCn from 'element-plus/dist/locale/zh-cn.mjs'
 
 import App from './App.vue'
-import routes from './router'
+import router from './router'
 
-// 配置dayjs中文
-dayjs.locale('zh-cn')
+import './style.css'
 
-// 创建路由
-const router = createRouter({
-  history: createWebHistory(),
-  routes,
-})
-
-// 创建应用
 const app = createApp(App)
 
-// 使用插件
+// 注册所有图标
+for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
+  app.component(key, component)
+}
+
 app.use(createPinia())
 app.use(router)
-app.use(Antd)
+app.use(ElementPlus, {
+  locale: zhCn,
+})
 
-// 全局配置
-app.config.globalProperties.$locale = zhCN
-
-// 挂载应用
 app.mount('#app')

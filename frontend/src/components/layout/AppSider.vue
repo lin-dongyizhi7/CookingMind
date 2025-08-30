@@ -1,109 +1,79 @@
 <template>
-  <a-layout-sider class="app-sider" :collapsed="collapsed" :trigger="null" collapsible>
+  <el-aside class="app-sider" :width="collapsed ? '64px' : '240px'">
     <div class="sider-content">
       <div class="sider-header">
         <div class="sider-logo">
-          <img src="/logo.svg" alt="食光家" />
+          <img src="/logo.png" alt="食光家" />
           <span v-show="!collapsed" class="sider-logo-text">食光家</span>
         </div>
       </div>
-
-      <a-menu
-        v-model:selectedKeys="selectedKeys"
-        v-model:openKeys="openKeys"
-        mode="inline"
-        theme="light"
+      
+      <el-menu
+        :default-active="selectedKeys[0]"
+        :collapse="collapsed"
         class="sider-menu"
-        @click="handleMenuClick"
+        @select="handleMenuSelect"
       >
-        <a-menu-item key="dashboard">
-          <template #icon>
-            <DashboardOutlined />
-          </template>
-          <span>仪表板</span>
-        </a-menu-item>
-
-        <a-menu-item key="ingredients">
-          <template #icon>
-            <CarrotOutlined />
-          </template>
-          <span>食材管理</span>
-        </a-menu-item>
-
-        <a-menu-item key="recipes">
-          <template #icon>
-            <BookOutlined />
-          </template>
-          <span>食谱管理</span>
-        </a-menu-item>
-
-        <a-menu-item key="cooking">
-          <template #icon>
-            <FireOutlined />
-          </template>
-          <span>烹饪指导</span>
-        </a-menu-item>
-
-        <a-menu-item key="nutrition">
-          <template #icon>
-            <HeartOutlined />
-          </template>
-          <span>营养管理</span>
-        </a-menu-item>
-
-        <a-menu-item key="family">
-          <template #icon>
-            <TeamOutlined />
-          </template>
-          <span>家庭管理</span>
-        </a-menu-item>
-
-        <a-menu-item key="profile">
-          <template #icon>
-            <UserOutlined />
-          </template>
-          <span>个人资料</span>
-        </a-menu-item>
-      </a-menu>
-
+        <el-menu-item index="dashboard">
+          <el-icon><Monitor /></el-icon>
+          <template #title>仪表盘</template>
+        </el-menu-item>
+        
+        <el-menu-item index="cooking">
+          <el-icon><Apple /></el-icon>
+          <template #title>智能烹饪</template>
+        </el-menu-item>
+        
+        <el-menu-item index="nutrition">
+          <el-icon><Document /></el-icon>
+          <template #title>营养管理</template>
+        </el-menu-item>
+        
+        <el-menu-item index="family">
+          <el-icon><UserFilled /></el-icon>
+          <template #title>家庭管理</template>
+        </el-menu-item>
+        
+        <el-menu-item index="profile">
+          <el-icon><User /></el-icon>
+          <template #title>个人资料</template>
+        </el-menu-item>
+      </el-menu>
+      
       <div class="sider-footer">
-        <a-button
+        <el-button
           type="text"
           class="collapse-btn"
           @click="toggleCollapsed"
         >
-          <template #icon>
-            <MenuFoldOutlined v-if="!collapsed" />
-            <MenuUnfoldOutlined v-else />
-          </template>
-          <span v-show="!collapsed">收起菜单</span>
-        </a-button>
+          <el-icon>
+            <Fold v-if="!collapsed" />
+            <Expand v-else />
+          </el-icon>
+        </el-button>
       </div>
     </div>
-  </a-layout-sider>
+  </el-aside>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { 
-  DashboardOutlined,
-  CarrotOutlined,
-  BookOutlined,
-  FireOutlined,
-  HeartOutlined,
-  TeamOutlined,
-  UserOutlined,
-  MenuFoldOutlined,
-  MenuUnfoldOutlined
-} from '@ant-design/icons-vue'
+  Monitor,
+  Apple,
+  Document,
+  UserFilled,
+  User,
+  Fold,
+  Expand
+} from '@element-plus/icons-vue'
 
 const route = useRoute()
 const router = useRouter()
 
 const collapsed = ref(false)
 const selectedKeys = ref<string[]>(['dashboard'])
-const openKeys = ref<string[]>([])
 
 // 根据当前路由设置选中的菜单项
 const currentRoute = computed(() => route.path)
@@ -113,7 +83,7 @@ watch(currentRoute, (newRoute) => {
   selectedKeys.value = [path]
 }, { immediate: true })
 
-const handleMenuClick = ({ key }: { key: string }) => {
+const handleMenuSelect = (key: string) => {
   router.push(`/${key}`)
 }
 
@@ -122,7 +92,7 @@ const toggleCollapsed = () => {
 }
 </script>
 
-<style scoped>
+<style lang="less" scoped>
 .app-sider {
   position: fixed;
   left: 0;
@@ -168,56 +138,54 @@ const toggleCollapsed = () => {
   flex: 1;
   border: none;
   padding: 16px 0;
-}
-
-.sider-menu :deep(.ant-menu-item) {
-  margin: 4px 16px;
-  border-radius: 8px;
-  height: 48px;
-  line-height: 48px;
-}
-
-.sider-menu :deep(.ant-menu-item-selected) {
-  background: linear-gradient(135deg, #667eea, #764ba2);
-  color: white;
-}
-
-.sider-menu :deep(.ant-menu-item:hover) {
-  background: rgba(102, 126, 234, 0.1);
-  color: #667eea;
-}
-
-.sider-menu :deep(.ant-menu-item-selected:hover) {
-  background: linear-gradient(135deg, #667eea, #764ba2);
-  color: white;
+  
+  :deep(.el-menu-item) {
+    margin: 4px 16px;
+    border-radius: 8px;
+    height: 48px;
+    line-height: 48px;
+    
+    &.is-active {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      
+      &:hover {
+        background: linear-gradient(135deg, #5a6fd8, #6a4190);
+      }
+    }
+    
+    &:hover {
+      background: rgba(102, 126, 234, 0.1);
+      color: #667eea;
+    }
+  }
 }
 
 .sider-footer {
   padding: 16px;
   border-top: 1px solid #f0f0f0;
+  text-align: center;
 }
 
 .collapse-btn {
   width: 100%;
   height: 40px;
-  border: none;
   color: #666;
-  transition: all 0.3s ease;
+  
+  &:hover {
+    color: #667eea;
+    background: rgba(102, 126, 234, 0.1);
+  }
 }
 
-.collapse-btn:hover {
-  color: #667eea;
-  background: rgba(102, 126, 234, 0.1);
-}
-
-/* 响应式设计 */
+// 移动端适配
 @media (max-width: 768px) {
   .app-sider {
     transform: translateX(-100%);
-  }
-  
-  .app-sider.ant-layout-sider-collapsed {
-    transform: translateX(0);
+    
+    &.mobile-open {
+      transform: translateX(0);
+    }
   }
 }
 </style>

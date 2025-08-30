@@ -1,173 +1,176 @@
 <template>
-  <a-layout class="app-layout">
+  <div class="app-layout">
     <!-- 侧边栏 -->
-    <a-layout-sider
-      v-model:collapsed="collapsed"
-      :trigger="null"
-      collapsible
-      class="app-sider"
+    <el-aside 
+      :class="['app-sider', { 'collapsed': collapsed }]"
+      :width="collapsed ? '64px' : '240px'"
     >
       <div class="logo">
         <h2 v-if="!collapsed">食光家</h2>
         <h2 v-else>食</h2>
       </div>
       
-      <a-menu
-        v-model:selectedKeys="selectedKeys"
-        mode="inline"
-        theme="dark"
+      <el-menu
+        :default-active="activeMenu"
+        :collapse="collapsed"
+        :unique-opened="true"
         class="app-menu"
+        background-color="#001529"
+        text-color="#fff"
+        active-text-color="#409EFF"
+        router
       >
-        <a-menu-item key="dashboard">
-          <router-link to="/dashboard">
-            <a-icon type="dashboard" />
-            <span>仪表板</span>
-          </router-link>
-        </a-menu-item>
+        <el-menu-item index="/dashboard">
+          <el-icon><Monitor /></el-icon>
+          <template #title>仪表板</template>
+        </el-menu-item>
         
-        <a-menu-item key="ingredients">
-          <router-link to="/ingredients">
-            <a-icon type="carrot" />
-            <span>食材管理</span>
-          </router-link>
-        </a-menu-item>
+        <el-menu-item index="/ingredients">
+          <el-icon><Apple /></el-icon>
+          <template #title>食材管理</template>
+        </el-menu-item>
         
-        <a-menu-item key="recipes">
-          <router-link to="/recipes">
-            <a-icon type="book" />
-            <span>菜谱管理</span>
-          </router-link>
-        </a-menu-item>
+        <el-menu-item index="/recipes">
+          <el-icon><Document /></el-icon>
+          <template #title>菜谱管理</template>
+        </el-menu-item>
         
-        <a-menu-item key="cooking">
-          <router-link to="/cooking">
-            <a-icon type="play-circle" />
-            <span>烹饪指导</span>
-          </router-link>
-        </a-menu-item>
+        <el-menu-item index="/cooking">
+          <el-icon><VideoPlay /></el-icon>
+          <template #title>烹饪指导</template>
+        </el-menu-item>
         
-        <a-menu-item key="nutrition">
-          <router-link to="/nutrition">
-            <a-icon type="heart" />
-            <span>营养管理</span>
-          </router-link>
-        </a-menu-item>
+        <el-menu-item index="/nutrition">
+          <el-icon><Star /></el-icon>
+          <template #title>营养管理</template>
+        </el-menu-item>
         
-        <a-menu-item key="family">
-          <router-link to="/family">
-            <a-icon type="team" />
-            <span>家庭管理</span>
-          </router-link>
-        </a-menu-item>
-      </a-menu>
-    </a-layout-sider>
+        <el-menu-item index="/family">
+          <el-icon><UserFilled /></el-icon>
+          <template #title>家庭管理</template>
+        </el-menu-item>
+      </el-menu>
+    </el-aside>
 
     <!-- 主内容区域 -->
-    <a-layout>
+    <div class="main-container">
       <!-- 头部 -->
-      <a-layout-header class="app-header">
+      <el-header class="app-header">
         <div class="header-left">
-          <a-button
+          <el-button
             type="text"
             @click="toggleCollapsed"
             class="trigger-btn"
           >
-            <a-icon :type="collapsed ? 'menu-unfold' : 'menu-fold'" />
-          </a-button>
+            <el-icon>
+              <Expand v-if="collapsed" />
+              <Fold v-else />
+            </el-icon>
+          </el-button>
           
-          <a-breadcrumb class="breadcrumb">
-            <a-breadcrumb-item>食光家</a-breadcrumb-item>
-            <a-breadcrumb-item>{{ currentPageTitle }}</a-breadcrumb-item>
-          </a-breadcrumb>
+          <el-breadcrumb class="breadcrumb">
+            <el-breadcrumb-item>食光家</el-breadcrumb-item>
+            <el-breadcrumb-item>{{ currentPageTitle }}</el-breadcrumb-item>
+          </el-breadcrumb>
         </div>
         
         <div class="header-right">
-          <a-space>
-            <a-badge :count="3" class="notification-badge">
-              <a-button type="text" shape="circle">
-                <a-icon type="bell" />
-              </a-button>
-            </a-badge>
+          <el-space>
+            <el-badge :value="3" class="notification-badge">
+              <el-button type="text" circle>
+                <el-icon><Bell /></el-icon>
+              </el-button>
+            </el-badge>
             
-            <a-dropdown>
-              <a-button type="text" class="user-dropdown">
-                <a-avatar :src="user?.avatar" :alt="user?.username">
+            <el-dropdown>
+              <el-button type="text" class="user-dropdown">
+                <el-avatar :src="user?.avatar" :size="32">
                   {{ user?.username?.charAt(0)?.toUpperCase() }}
-                </a-avatar>
+                </el-avatar>
                 <span class="username">{{ user?.username }}</span>
-                <a-icon type="down" />
-              </a-button>
+                <el-icon><ArrowDown /></el-icon>
+              </el-button>
               
-              <template #overlay>
-                <a-menu>
-                  <a-menu-item key="profile">
+              <template #dropdown>
+                <el-dropdown-menu>
+                  <el-dropdown-item>
                     <router-link to="/profile">
-                      <a-icon type="user" />
+                      <el-icon><User /></el-icon>
                       个人资料
                     </router-link>
-                  </a-menu-item>
-                  <a-menu-item key="settings">
-                    <a-icon type="setting" />
+                  </el-dropdown-item>
+                  <el-dropdown-item>
+                    <el-icon><Setting /></el-icon>
                     设置
-                  </a-menu-item>
-                  <a-menu-divider />
-                  <a-menu-item key="logout" @click="handleLogout">
-                    <a-icon type="logout" />
+                  </el-dropdown-item>
+                  <el-dropdown-item divided @click="handleLogout">
+                    <el-icon><SwitchButton /></el-icon>
                     退出登录
-                  </a-menu-item>
-                </a-menu>
+                  </el-dropdown-item>
+                </el-dropdown-menu>
               </template>
-            </a-dropdown>
-          </a-space>
+            </el-dropdown>
+          </el-space>
         </div>
-      </a-layout-header>
+      </el-header>
 
       <!-- 内容区域 -->
-      <a-layout-content class="main-content">
+      <div class="main-content">
         <div class="content-area">
           <router-view />
         </div>
-      </a-layout-content>
+      </div>
 
       <!-- 页脚 -->
-      <a-layout-footer class="app-footer">
+      <el-footer class="app-footer">
         <div class="footer-content">
           <p>&copy; 2024 食光家. 让烹饪更智能，让生活更美好.</p>
         </div>
-      </a-layout-footer>
-    </a-layout>
-  </a-layout>
+      </el-footer>
+    </div>
+
+    <!-- 移动端遮罩 -->
+    <div 
+      v-if="!collapsed && isMobile" 
+      class="mobile-overlay"
+      @click="collapsed = true"
+    ></div>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { message } from 'ant-design-vue'
+import { ElMessage } from 'element-plus'
 import { useAuthStore } from '@/stores/authStore'
 import {
-  DashboardOutlined,
-  AppleOutlined,
-  BookOutlined,
-  PlayCircleOutlined,
-  HeartOutlined,
-  TeamOutlined,
-  MenuUnfoldOutlined,
-  MenuFoldOutlined,
-  BellOutlined,
-  UserOutlined,
-  SettingOutlined,
-  LogoutOutlined,
-  DownOutlined
-} from '@ant-design/icons-vue'
+  Monitor,
+  Apple,
+  Document,
+  VideoPlay,
+  Star,
+  UserFilled,
+  Expand,
+  Fold,
+  Bell,
+  User,
+  Setting,
+  SwitchButton,
+  ArrowDown
+} from '@element-plus/icons-vue'
 
 const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
 
 const collapsed = ref(false)
-const selectedKeys = ref<string[]>(['dashboard'])
+const isMobile = ref(false)
 
 const user = computed(() => authStore.user)
+
+const activeMenu = computed(() => {
+  return route.path
+})
 
 const currentPageTitle = computed(() => {
   const routeMap: Record<string, string> = {
@@ -182,6 +185,14 @@ const currentPageTitle = computed(() => {
   return routeMap[route.name as string] || '未知页面'
 })
 
+// 检测移动端
+const checkMobile = () => {
+  isMobile.value = window.innerWidth <= 768
+  if (isMobile.value && !collapsed.value) {
+    collapsed.value = true
+  }
+}
+
 const toggleCollapsed = () => {
   collapsed.value = !collapsed.value
 }
@@ -189,51 +200,47 @@ const toggleCollapsed = () => {
 const handleLogout = async () => {
   try {
     authStore.logout()
-    message.success('已退出登录')
+    ElMessage.success('已退出登录')
     router.push('/login')
   } catch (error) {
-    message.error('退出登录失败')
+    ElMessage.error('退出登录失败')
   }
 }
 
-// 监听路由变化，更新选中的菜单项
-watch(
-  () => route.path,
-  () => {
-    updateSelectedKeys()
-  },
-  { immediate: true }
-)
-
-// 根据当前路由路径获取菜单key
-const getMenuKeyFromRoute = (path: string): string => {
-  // 移除开头的斜杠并获取第一段路径
-  const pathSegments = path.split('/').filter(segment => segment)
-  if (pathSegments.length === 0) return 'dashboard'
-  
-  const firstSegment = pathSegments[0]
-  
-  // 特殊处理cooking路由，因为它可能有参数
-  if (firstSegment === 'cooking') return 'cooking'
-  
-  return firstSegment
+// 监听窗口大小变化
+const handleResize = () => {
+  checkMobile()
 }
 
-// 更新选中的菜单项
-const updateSelectedKeys = () => {
-  const currentPath = route.path
-  const menuKey = getMenuKeyFromRoute(currentPath)
-  selectedKeys.value = [menuKey]
-}
+onMounted(() => {
+  checkMobile()
+  window.addEventListener('resize', handleResize)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', handleResize)
+})
 </script>
 
-<style scoped>
+<style lang="less" scoped>
 .app-layout {
+  display: flex;
   min-height: 100vh;
+  position: relative;
 }
 
 .app-sider {
   background: #001529;
+  transition: width 0.3s;
+  position: fixed;
+  height: 100vh;
+  z-index: 1000;
+  
+  &.collapsed {
+    .logo h2 {
+      font-size: 16px;
+    }
+  }
 }
 
 .logo {
@@ -245,31 +252,44 @@ const updateSelectedKeys = () => {
   font-size: 18px;
   font-weight: bold;
   border-bottom: 1px solid #303030;
+  
+  h2 {
+    margin: 0;
+    transition: font-size 0.3s;
+  }
 }
 
 .app-menu {
   border-right: none;
+  
+  :deep(.el-menu-item) {
+    height: 50px;
+    line-height: 50px;
+    
+    &.is-active {
+      background-color: #409EFF !important;
+    }
+    
+    &:hover {
+      background-color: #1890ff !important;
+    }
+  }
+  
+  :deep(.el-menu-item .el-icon) {
+    margin-right: 8px;
+  }
 }
 
-/* 确保菜单项链接样式正确 */
-.app-menu :deep(.ant-menu-item) {
-  margin: 0;
-}
-
-.app-menu :deep(.ant-menu-item a) {
-  color: inherit;
-  text-decoration: none;
+.main-container {
+  flex: 1;
+  margin-left: 240px;
+  transition: margin-left 0.3s;
   display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.app-menu :deep(.ant-menu-item-selected) {
-  background-color: #1890ff !important;
-}
-
-.app-menu :deep(.ant-menu-item:hover) {
-  background-color: #1890ff !important;
+  flex-direction: column;
+  
+  .app-sider.collapsed + & {
+    margin-left: 64px;
+  }
 }
 
 .app-header {
@@ -279,6 +299,8 @@ const updateSelectedKeys = () => {
   align-items: center;
   justify-content: space-between;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  height: 64px;
+  line-height: 64px;
 }
 
 .header-left {
@@ -322,6 +344,7 @@ const updateSelectedKeys = () => {
 }
 
 .main-content {
+  flex: 1;
   margin: 24px;
   background: #f0f2f5;
   min-height: calc(100vh - 112px);
@@ -338,6 +361,8 @@ const updateSelectedKeys = () => {
   text-align: center;
   background: #f0f2f5;
   border-top: 1px solid #e8e8e8;
+  height: 48px;
+  line-height: 48px;
 }
 
 .footer-content {
@@ -345,8 +370,31 @@ const updateSelectedKeys = () => {
   font-size: 14px;
 }
 
-/* 响应式设计 */
+.mobile-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+}
+
+// 移动端适配
 @media (max-width: 768px) {
+  .app-sider {
+    transform: translateX(-100%);
+    transition: transform 0.3s;
+    
+    &.collapsed {
+      transform: translateX(0);
+    }
+  }
+  
+  .main-container {
+    margin-left: 0;
+  }
+  
   .app-header {
     padding: 0 16px;
   }
@@ -361,6 +409,33 @@ const updateSelectedKeys = () => {
   
   .username {
     display: none;
+  }
+  
+  .breadcrumb {
+    display: none;
+  }
+  
+  .app-sider.collapsed + .main-container {
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .app-header {
+    padding: 0 12px;
+  }
+  
+  .main-content {
+    margin: 12px;
+  }
+  
+  .content-area {
+    padding: 12px;
+  }
+  
+  .trigger-btn {
+    width: 48px;
+    height: 48px;
   }
 }
 </style>

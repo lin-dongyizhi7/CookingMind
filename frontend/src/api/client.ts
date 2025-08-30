@@ -1,5 +1,5 @@
 import axios, { type AxiosInstance, type AxiosRequestConfig, type AxiosResponse } from 'axios'
-import { message } from 'ant-design-vue'
+import { ElMessage } from 'element-plus'
 import router from '@/router'
 
 // 创建 axios 实例
@@ -36,25 +36,25 @@ apiClient.interceptors.response.use(
     if (response) {
       switch (response.status) {
         case 401:
-          message.error('登录已过期，请重新登录')
+          ElMessage.error('登录已过期，请重新登录')
           localStorage.removeItem('token')
           localStorage.removeItem('user')
           router.push('/login')
           break
         case 403:
-          message.error('没有权限访问该资源')
+          ElMessage.error('没有权限访问该资源')
           break
         case 404:
-          message.error('请求的资源不存在')
+          ElMessage.error('请求的资源不存在')
           break
         case 500:
-          message.error('服务器内部错误')
+          ElMessage.error('服务器内部错误')
           break
         default:
-          message.error(response.data?.message || '请求失败')
+          ElMessage.error(response.data?.message || '请求失败')
       }
     } else {
-      message.error('网络错误，请检查网络连接')
+              ElMessage.error('网络错误，请检查网络连接')
     }
     
     return Promise.reject(error)

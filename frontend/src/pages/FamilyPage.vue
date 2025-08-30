@@ -1,288 +1,342 @@
 <template>
   <div class="family-page">
-    <a-row :gutter="24">
+    <el-row :gutter="24">
       <!-- 家庭信息 -->
-      <a-col :span="24">
-        <a-card title="家庭信息" :bordered="false" class="family-info-card">
-          <a-row :gutter="16">
-            <a-col :span="8">
+      <el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24">
+        <el-card class="family-info-card" shadow="never">
+          <template #header>
+            <span class="card-title">家庭信息</span>
+          </template>
+          <el-row :gutter="16">
+            <el-col :xs="24" :sm="8" :md="8" :lg="8" :xl="8">
               <div class="family-avatar">
-                <a-avatar :size="120" :src="familyInfo.avatar || '/default-family.jpg'" />
-                <h2>{{ familyInfo.name }}</h2>
+                <el-avatar :size="120" :src="familyInfo.avatar || '/default-family.jpg'" />
+                <h2 class="family-name">{{ familyInfo.name }}</h2>
                 <p class="family-description">{{ familyInfo.description }}</p>
               </div>
-            </a-col>
-            <a-col :span="16">
-              <a-descriptions :column="2" bordered>
-                <a-descriptions-item label="家庭ID">{{ familyInfo.id }}</a-descriptions-item>
-                <a-descriptions-item label="创建时间">{{ familyInfo.createdAt }}</a-descriptions-item>
-                <a-descriptions-item label="成员数量">{{ familyInfo.memberCount }}人</a-descriptions-item>
-                <a-descriptions-item label="家庭状态">
-                  <a-tag :color="familyInfo.status === 'active' ? 'green' : 'red'">
+            </el-col>
+            <el-col :xs="24" :sm="16" :md="16" :lg="16" :xl="16">
+              <el-descriptions :column="2" border>
+                <el-descriptions-item label="家庭ID">{{ familyInfo.id }}</el-descriptions-item>
+                <el-descriptions-item label="创建时间">{{ familyInfo.createdAt }}</el-descriptions-item>
+                <el-descriptions-item label="成员数量">{{ familyInfo.memberCount }}人</el-descriptions-item>
+                <el-descriptions-item label="家庭状态">
+                  <el-tag :type="familyInfo.status === 'active' ? 'success' : 'danger'">
                     {{ familyInfo.status === 'active' ? '活跃' : '非活跃' }}
-                  </a-tag>
-                </a-descriptions-item>
-              </a-descriptions>
+                  </el-tag>
+                </el-descriptions-item>
+              </el-descriptions>
               
               <div class="family-actions" v-if="isOwner">
-                <a-button type="primary" @click="showEditFamilyModal">
+                <el-button type="primary" @click="showEditFamilyModal" size="large">
                   编辑家庭信息
-                </a-button>
-                <a-button @click="showFamilySettingsModal">
+                </el-button>
+                <el-button @click="showFamilySettingsModal" size="large">
                   家庭设置
-                </a-button>
+                </el-button>
               </div>
-            </a-col>
-          </a-row>
-        </a-card>
-      </a-col>
+            </el-col>
+          </el-row>
+        </el-card>
+      </el-col>
 
       <!-- 成员管理 -->
-      <a-col :span="24">
-        <a-card title="成员管理" :bordered="false">
+      <el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24">
+        <el-card class="member-card" shadow="never">
+          <template #header>
+            <span class="card-title">成员管理</span>
+          </template>
           <div class="member-actions">
-            <a-button type="primary" @click="showInviteModal" v-if="canInvite">
+            <el-button type="primary" @click="showInviteModal" v-if="canInvite" size="large">
               邀请新成员
-            </a-button>
-            <a-button @click="refreshMembers">
+            </el-button>
+            <el-button @click="refreshMembers" size="large">
               刷新成员列表
-            </a-button>
+            </el-button>
           </div>
 
-          <a-table
-            :columns="memberColumns"
-            :data-source="familyMembers"
+          <el-table
+            :data="familyMembers"
             :loading="membersLoading"
-            :pagination="false"
-            row-key="userId"
+            style="width: 100%"
+            size="large"
           >
-            <template #bodyCell="{ column, record }">
-              <template v-if="column.key === 'avatar'">
-                <a-avatar :src="record.avatar || '/default-avatar.jpg'" />
+            <el-table-column label="头像" width="80">
+              <template #default="{ row }">
+                <el-avatar :src="row.avatar || '/default-avatar.jpg'" />
               </template>
-              <template v-else-if="column.key === 'role'">
-                <a-tag :color="getRoleColor(record.role)">
-                  {{ getRoleText(record.role) }}
-                </a-tag>
+            </el-table-column>
+            <el-table-column prop="username" label="用户名" />
+            <el-table-column label="角色" width="100">
+              <template #default="{ row }">
+                <el-tag :type="getRoleType(row.role)">
+                  {{ getRoleText(row.role) }}
+                </el-tag>
               </template>
-              <template v-else-if="column.key === 'healthStatus'">
-                <a-tag :color="getHealthStatusColor(record.healthStatus)">
-                  {{ getHealthStatusText(record.healthStatus) }}
-                </a-tag>
+            </el-table-column>
+            <el-table-column prop="age" label="年龄" width="80" />
+            <el-table-column label="性别" width="80">
+              <template #default="{ row }">
+                {{ row.gender === 'male' ? '男' : '女' }}
               </template>
-              <template v-else-if="column.key === 'actions'">
-                <a-space>
-                  <a-button size="small" @click="viewMemberProfile(record)">
+            </el-table-column>
+            <el-table-column label="健康状况" width="100">
+              <template #default="{ row }">
+                <el-tag :type="getHealthStatusType(row.healthStatus)">
+                  {{ getHealthStatusText(row.healthStatus) }}
+                </el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column prop="joinDate" label="加入时间" width="120" />
+            <el-table-column label="操作" width="200">
+              <template #default="{ row }">
+                <el-space>
+                  <el-button size="small" @click="viewMemberProfile(row)">
                     查看
-                  </a-button>
-                  <a-button 
+                  </el-button>
+                  <el-button 
                     size="small" 
-                    @click="editMember(record)"
-                    v-if="canEditMember(record)"
+                    @click="editMember(row)"
+                    v-if="canEditMember(row)"
                   >
                     编辑
-                  </a-button>
-                  <a-popconfirm
+                  </el-button>
+                  <el-popconfirm
                     title="确定要移除此成员吗？"
-                    @confirm="removeMember(record)"
-                    v-if="canRemoveMember(record)"
+                    @confirm="removeMember(row)"
+                    v-if="canRemoveMember(row)"
                   >
-                    <a-button size="small" danger>
-                      移除
-                    </a-button>
-                  </a-popconfirm>
-                </a-space>
+                    <template #reference>
+                      <el-button size="small" type="danger">
+                        移除
+                      </el-button>
+                    </template>
+                  </el-popconfirm>
+                </el-space>
               </template>
-            </template>
-          </a-table>
-        </a-card>
-      </a-col>
+            </el-table-column>
+          </el-table>
+        </el-card>
+      </el-col>
 
       <!-- 家庭活动 -->
-      <a-col :span="12">
-        <a-card title="最近活动" :bordered="false">
-          <a-timeline>
-            <a-timeline-item 
+      <el-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
+        <el-card class="activity-card" shadow="never">
+          <template #header>
+            <span class="card-title">最近活动</span>
+          </template>
+          <el-timeline>
+            <el-timeline-item 
               v-for="activity in recentActivities" 
               :key="activity.id"
+              :type="getActivityType(activity.type)"
               :color="getActivityColor(activity.type)"
+              size="large"
             >
-              <template #dot>
-                <a-icon :type="getActivityIcon(activity.type)" />
+              <template #icon>
+                <el-icon>
+                  <component :is="getActivityIcon(activity.type)" />
+                </el-icon>
               </template>
               <p class="activity-content">{{ activity.content }}</p>
               <p class="activity-time">{{ activity.time }}</p>
-            </a-timeline-item>
-          </a-timeline>
-        </a-card>
-      </a-col>
+            </el-timeline-item>
+          </el-timeline>
+        </el-card>
+      </el-col>
 
       <!-- 家庭统计 -->
-      <a-col :span="12">
-        <a-card title="家庭统计" :bordered="false">
-          <a-row :gutter="16">
-            <a-col :span="12">
-              <a-statistic title="本月烹饪次数" :value="familyStats.cookingCount" />
-            </a-col>
-            <a-col :span="12">
-              <a-statistic title="平均评分" :value="familyStats.avgRating" :precision="1" />
-            </a-col>
-          </a-row>
-          <a-row :gutter="16" style="margin-top: 16px;">
-            <a-col :span="12">
-              <a-statistic title="健康指数" :value="familyStats.healthIndex" suffix="%" />
-            </a-col>
-            <a-col :span="12">
-              <a-statistic title="营养达标率" :value="familyStats.nutritionRate" suffix="%" />
-            </a-col>
-          </a-row>
-        </a-card>
-      </a-col>
-    </a-row>
+      <el-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
+        <el-card class="stats-card" shadow="never">
+          <template #header>
+            <span class="card-title">家庭统计</span>
+          </template>
+          <el-row :gutter="16">
+            <el-col :xs="12" :sm="12" :md="12" :lg="12" :xl="12">
+              <el-statistic title="本月烹饪次数" :value="familyStats.cookingCount" />
+            </el-col>
+            <el-col :xs="12" :sm="12" :md="12" :lg="12" :xl="12">
+              <el-statistic title="平均评分" :value="familyStats.avgRating" :precision="1" />
+            </el-col>
+          </el-row>
+          <el-row :gutter="16" style="margin-top: 16px;">
+            <el-col :xs="12" :sm="12" :md="12" :lg="12" :xl="12">
+              <el-statistic title="健康指数" :value="familyStats.healthIndex" suffix="%" />
+            </el-col>
+            <el-col :xs="12" :sm="12" :md="12" :lg="12" :xl="12">
+              <el-statistic title="营养达标率" :value="familyStats.nutritionRate" suffix="%" />
+            </el-col>
+          </el-row>
+        </el-card>
+      </el-col>
+    </el-row>
 
     <!-- 邀请成员模态框 -->
-    <a-modal
-      v-model:open="inviteModalVisible"
+    <el-dialog
+      v-model="inviteModalVisible"
       title="邀请新成员"
-      @ok="sendInvitation"
-      @cancel="inviteModalVisible = false"
-      :confirm-loading="inviteLoading"
+      width="500px"
+      :close-on-click-modal="false"
     >
-      <a-form :model="inviteForm" layout="vertical">
-        <a-form-item label="邮箱地址" required>
-          <a-input 
-            v-model:value="inviteForm.email" 
+      <el-form :model="inviteForm" label-width="100px" size="large">
+        <el-form-item label="邮箱地址" required>
+          <el-input 
+            v-model="inviteForm.email" 
             placeholder="请输入邮箱地址"
             type="email"
           />
-        </a-form-item>
-        <a-form-item label="角色" required>
-          <a-select v-model:value="inviteForm.role" placeholder="请选择角色">
-            <a-select-option value="member">普通成员</a-select-option>
-            <a-select-option value="admin">管理员</a-select-option>
-          </a-select>
-        </a-form-item>
-        <a-form-item label="邀请消息">
-          <a-textarea 
-            v-model:value="inviteForm.message" 
+        </el-form-item>
+        <el-form-item label="角色" required>
+          <el-select v-model="inviteForm.role" placeholder="请选择角色" style="width: 100%">
+            <el-option label="普通成员" value="member" />
+            <el-option label="管理员" value="admin" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="邀请消息">
+          <el-input 
+            v-model="inviteForm.message" 
             placeholder="请输入邀请消息（可选）"
+            type="textarea"
             :rows="3"
           />
-        </a-form-item>
-      </a-form>
-    </a-modal>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="inviteModalVisible = false">取消</el-button>
+          <el-button type="primary" @click="sendInvitation" :loading="inviteLoading">
+            发送邀请
+          </el-button>
+        </span>
+      </template>
+    </el-dialog>
 
     <!-- 编辑家庭信息模态框 -->
-    <a-modal
-      v-model:open="editFamilyModalVisible"
+    <el-dialog
+      v-model="editFamilyModalVisible"
       title="编辑家庭信息"
-      @ok="updateFamilyInfo"
-      @cancel="editFamilyModalVisible = false"
-      :confirm-loading="updateLoading"
+      width="500px"
+      :close-on-click-modal="false"
     >
-      <a-form :model="editFamilyForm" layout="vertical">
-        <a-form-item label="家庭名称" required>
-          <a-input 
-            v-model:value="editFamilyForm.name" 
+      <el-form :model="editFamilyForm" label-width="100px" size="large">
+        <el-form-item label="家庭名称" required>
+          <el-input 
+            v-model="editFamilyForm.name" 
             placeholder="请输入家庭名称"
           />
-        </a-form-item>
-        <a-form-item label="家庭描述">
-          <a-textarea 
-            v-model:value="editFamilyForm.description" 
+        </el-form-item>
+        <el-form-item label="家庭描述">
+          <el-input 
+            v-model="editFamilyForm.description" 
             placeholder="请输入家庭描述"
+            type="textarea"
             :rows="3"
           />
-        </a-form-item>
-        <a-form-item label="家庭头像">
-          <a-upload
+        </el-form-item>
+        <el-form-item label="家庭头像">
+          <el-upload
             v-model:file-list="editFamilyForm.avatarFileList"
             :before-upload="beforeAvatarUpload"
             :max-count="1"
             list-type="picture-card"
+            style="width: 100%"
           >
-            <div>
-              <plus-outlined />
-              <div style="margin-top: 8px">上传</div>
-            </div>
-          </a-upload>
-        </a-form-item>
-      </a-form>
-    </a-modal>
+            <el-icon><Plus /></el-icon>
+          </el-upload>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="editFamilyModalVisible = false">取消</el-button>
+          <el-button type="primary" @click="updateFamilyInfo" :loading="updateLoading">
+            更新
+          </el-button>
+        </span>
+      </template>
+    </el-dialog>
 
     <!-- 编辑成员模态框 -->
-    <a-modal
-      v-model:open="editMemberModalVisible"
+    <el-dialog
+      v-model="editMemberModalVisible"
       title="编辑成员信息"
-      @ok="updateMemberInfo"
-      @cancel="editMemberModalVisible = false"
-      :confirm-loading="updateMemberLoading"
+      width="600px"
+      :close-on-click-modal="false"
     >
-      <a-form :model="editMemberForm" layout="vertical">
-        <a-form-item label="角色">
-          <a-select v-model:value="editMemberForm.role" placeholder="请选择角色">
-            <a-select-option value="member">普通成员</a-select-option>
-            <a-select-option value="admin">管理员</a-select-option>
-            <a-select-option value="owner">所有者</a-select-option>
-          </a-select>
-        </a-form-item>
-        <a-form-item label="年龄">
-          <a-input-number 
-            v-model:value="editMemberForm.age" 
+      <el-form :model="editMemberForm" label-width="100px" size="large">
+        <el-form-item label="角色">
+          <el-select v-model="editMemberForm.role" placeholder="请选择角色" style="width: 100%">
+            <el-option label="普通成员" value="member" />
+            <el-option label="管理员" value="admin" />
+            <el-option label="所有者" value="owner" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="年龄">
+          <el-input-number 
+            v-model="editMemberForm.age" 
             :min="1" 
             :max="120"
             style="width: 100%"
           />
-        </a-form-item>
-        <a-form-item label="性别">
-          <a-radio-group v-model:value="editMemberForm.gender">
-            <a-radio value="male">男</a-radio>
-            <a-radio value="female">女</a-radio>
-          </a-radio-group>
-        </a-form-item>
-        <a-form-item label="健康状况">
-          <a-select v-model:value="editMemberForm.healthStatus" placeholder="请选择健康状况">
-            <a-select-option value="excellent">优秀</a-select-option>
-            <a-select-option value="good">良好</a-select-option>
-            <a-select-option value="fair">一般</a-select-option>
-            <a-select-option value="poor">较差</a-select-option>
-          </a-select>
-        </a-form-item>
-        <a-form-item label="饮食限制">
-          <a-select
-            v-model:value="editMemberForm.dietaryRestrictions"
-            mode="multiple"
+        </el-form-item>
+        <el-form-item label="性别">
+          <el-radio-group v-model="editMemberForm.gender">
+            <el-radio label="male">男</el-radio>
+            <el-radio label="female">女</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item label="健康状况">
+          <el-select v-model="editMemberForm.healthStatus" placeholder="请选择健康状况" style="width: 100%">
+            <el-option label="优秀" value="excellent" />
+            <el-option label="良好" value="good" />
+            <el-option label="一般" value="fair" />
+            <el-option label="较差" value="poor" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="饮食限制">
+          <el-select
+            v-model="editMemberForm.dietaryRestrictions"
+            multiple
             placeholder="请选择饮食限制"
+            style="width: 100%"
           >
-            <a-select-option value="vegetarian">素食</a-select-option>
-            <a-select-option value="vegan">纯素</a-select-option>
-            <a-select-option value="gluten-free">无麸质</a-select-option>
-            <a-select-option value="dairy-free">无乳制品</a-select-option>
-            <a-select-option value="nut-free">无坚果</a-select-option>
-          </a-select>
-        </a-form-item>
-        <a-form-item label="过敏原">
-          <a-select
-            v-model:value="editMemberForm.allergies"
-            mode="multiple"
+            <el-option label="素食" value="vegetarian" />
+            <el-option label="纯素" value="vegan" />
+            <el-option label="无麸质" value="gluten-free" />
+            <el-option label="无乳制品" value="dairy-free" />
+            <el-option label="无坚果" value="nut-free" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="过敏原">
+          <el-select
+            v-model="editMemberForm.allergies"
+            multiple
             placeholder="请选择过敏原"
+            style="width: 100%"
           >
-            <a-select-option value="peanuts">花生</a-select-option>
-            <a-select-option value="shellfish">海鲜</a-select-option>
-            <a-select-option value="eggs">鸡蛋</a-select-option>
-            <a-select-option value="milk">牛奶</a-select-option>
-            <a-select-option value="soy">大豆</a-select-option>
-          </a-select>
-        </a-form-item>
-      </a-form>
-    </a-modal>
+            <el-option label="花生" value="peanuts" />
+            <el-option label="海鲜" value="shellfish" />
+            <el-option label="鸡蛋" value="eggs" />
+            <el-option label="牛奶" value="milk" />
+            <el-option label="大豆" value="soy" />
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="editMemberModalVisible = false">取消</el-button>
+          <el-button type="primary" @click="updateMemberInfo" :loading="updateMemberLoading">
+            更新
+          </el-button>
+        </span>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive, onMounted, computed } from 'vue'
-import { message } from 'ant-design-vue'
-import { PlusOutlined } from '@ant-design/icons-vue'
+import { ElMessage } from 'element-plus'
+import { Plus, Cooking, UserAdd, Document } from '@element-plus/icons-vue'
 
 // 响应式数据
 const inviteModalVisible = ref(false)
@@ -398,56 +452,6 @@ const familyStats = reactive({
   nutritionRate: 78
 })
 
-// 表格列定义
-const memberColumns = [
-  {
-    title: '头像',
-    dataIndex: 'avatar',
-    key: 'avatar',
-    width: 80
-  },
-  {
-    title: '用户名',
-    dataIndex: 'username',
-    key: 'username'
-  },
-  {
-    title: '角色',
-    dataIndex: 'role',
-    key: 'role',
-    width: 100
-  },
-  {
-    title: '年龄',
-    dataIndex: 'age',
-    key: 'age',
-    width: 80
-  },
-  {
-    title: '性别',
-    dataIndex: 'gender',
-    key: 'gender',
-    width: 80
-  },
-  {
-    title: '健康状况',
-    dataIndex: 'healthStatus',
-    key: 'healthStatus',
-    width: 100
-  },
-  {
-    title: '加入时间',
-    dataIndex: 'joinDate',
-    key: 'joinDate',
-    width: 120
-  },
-  {
-    title: '操作',
-    key: 'actions',
-    width: 200
-  }
-]
-
 // 计算属性
 const isOwner = computed(() => {
   // 这里应该根据当前用户判断是否为家庭所有者
@@ -461,13 +465,13 @@ const canInvite = computed(() => {
 })
 
 // 方法
-const getRoleColor = (role: string) => {
-  const colors = {
-    owner: 'red',
-    admin: 'blue',
-    member: 'green'
+const getRoleType = (role: string) => {
+  const types = {
+    owner: 'danger',
+    admin: 'warning',
+    member: 'success'
   }
-  return colors[role] || 'default'
+  return types[role] || 'info'
 }
 
 const getRoleText = (role: string) => {
@@ -479,14 +483,14 @@ const getRoleText = (role: string) => {
   return texts[role] || '未知'
 }
 
-const getHealthStatusColor = (status: string) => {
-  const colors = {
-    excellent: 'green',
-    good: 'blue',
-    fair: 'orange',
-    poor: 'red'
+const getHealthStatusType = (status: string) => {
+  const types = {
+    excellent: 'success',
+    good: 'primary',
+    fair: 'warning',
+    poor: 'danger'
   }
-  return colors[status] || 'default'
+  return types[status] || 'info'
 }
 
 const getHealthStatusText = (status: string) => {
@@ -499,22 +503,31 @@ const getHealthStatusText = (status: string) => {
   return texts[status] || '未知'
 }
 
+const getActivityType = (type: string) => {
+  const types = {
+    cooking: 'success',
+    invite: 'primary',
+    recipe: 'warning'
+  }
+  return types[type] || 'info'
+}
+
 const getActivityColor = (type: string) => {
   const colors = {
-    cooking: 'green',
-    invite: 'blue',
-    recipe: 'orange'
+    cooking: '#67c23a',
+    invite: '#409eff',
+    recipe: '#e6a23c'
   }
-  return colors[type] || 'default'
+  return colors[type] || '#909399'
 }
 
 const getActivityIcon = (type: string) => {
   const icons = {
-    cooking: 'fire',
-    invite: 'user-add',
-    recipe: 'book'
+    cooking: 'Cooking',
+    invite: 'UserAdd',
+    recipe: 'Document'
   }
-  return icons[type] || 'info'
+  return icons[type] || 'InfoFilled'
 }
 
 const canEditMember = (member: any) => {
@@ -540,7 +553,7 @@ const showEditFamilyModal = () => {
 }
 
 const showFamilySettingsModal = () => {
-  message.info('家庭设置功能开发中...')
+  ElMessage.info('家庭设置功能开发中...')
 }
 
 const editMember = (member: any) => {
@@ -554,20 +567,20 @@ const editMember = (member: any) => {
 }
 
 const viewMemberProfile = (member: any) => {
-  message.info(`查看 ${member.username} 的详细资料`)
+  ElMessage.info(`查看 ${member.username} 的详细资料`)
 }
 
 const refreshMembers = () => {
   membersLoading.value = true
   setTimeout(() => {
     membersLoading.value = false
-    message.success('成员列表已刷新')
+    ElMessage.success('成员列表已刷新')
   }, 1000)
 }
 
 const sendInvitation = async () => {
   if (!inviteForm.email) {
-    message.error('请输入邮箱地址')
+    ElMessage.error('请输入邮箱地址')
     return
   }
   
@@ -575,10 +588,10 @@ const sendInvitation = async () => {
   try {
     // 这里应该调用API发送邀请
     await new Promise(resolve => setTimeout(resolve, 2000))
-    message.success('邀请已发送')
+    ElMessage.success('邀请已发送')
     inviteModalVisible.value = false
   } catch (error) {
-    message.error('发送邀请失败')
+    ElMessage.error('发送邀请失败')
   } finally {
     inviteLoading.value = false
   }
@@ -586,7 +599,7 @@ const sendInvitation = async () => {
 
 const updateFamilyInfo = async () => {
   if (!editFamilyForm.name) {
-    message.error('请输入家庭名称')
+    ElMessage.error('请输入家庭名称')
     return
   }
   
@@ -596,10 +609,10 @@ const updateFamilyInfo = async () => {
     await new Promise(resolve => setTimeout(resolve, 2000))
     familyInfo.name = editFamilyForm.name
     familyInfo.description = editFamilyForm.description
-    message.success('家庭信息已更新')
+    ElMessage.success('家庭信息已更新')
     editFamilyModalVisible.value = false
   } catch (error) {
-    message.error('更新家庭信息失败')
+    ElMessage.error('更新家庭信息失败')
   } finally {
     updateLoading.value = false
   }
@@ -610,10 +623,10 @@ const updateMemberInfo = async () => {
   try {
     // 这里应该调用API更新成员信息
     await new Promise(resolve => setTimeout(resolve, 2000))
-    message.success('成员信息已更新')
+    ElMessage.success('成员信息已更新')
     editMemberModalVisible.value = false
   } catch (error) {
-    message.error('更新成员信息失败')
+    ElMessage.error('更新成员信息失败')
   } finally {
     updateMemberLoading.value = false
   }
@@ -625,20 +638,20 @@ const removeMember = async (member: any) => {
     await new Promise(resolve => setTimeout(resolve, 1000))
     familyMembers.value = familyMembers.value.filter(m => m.userId !== member.userId)
     familyInfo.memberCount--
-    message.success(`${member.username} 已从家庭中移除`)
+    ElMessage.success(`${member.username} 已从家庭中移除`)
   } catch (error) {
-    message.error('移除成员失败')
+    ElMessage.error('移除成员失败')
   }
 }
 
 const beforeAvatarUpload = (file: File) => {
   const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png'
   if (!isJpgOrPng) {
-    message.error('只能上传 JPG/PNG 格式的图片!')
+    ElMessage.error('只能上传 JPG/PNG 格式的图片!')
   }
   const isLt2M = file.size / 1024 / 1024 < 2
   if (!isLt2M) {
-    message.error('图片大小不能超过 2MB!')
+    ElMessage.error('图片大小不能超过 2MB!')
   }
   return isJpgOrPng && isLt2M
 }
@@ -648,57 +661,127 @@ onMounted(() => {
 })
 </script>
 
-<style scoped>
+<style lang="less" scoped>
 .family-page {
-  padding: 24px;
+  padding: 0;
 }
 
-.family-info-card {
+.family-info-card,
+.member-card,
+.activity-card,
+.stats-card {
   margin-bottom: 24px;
+  border: none;
+  box-shadow: none;
+  
+  .card-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #303133;
+  }
 }
 
 .family-avatar {
   text-align: center;
-}
-
-.family-avatar h2 {
-  margin: 16px 0 8px 0;
-  color: #1890ff;
-}
-
-.family-description {
-  color: #666;
-  margin-bottom: 16px;
+  
+  .family-name {
+    margin: 16px 0 8px 0;
+    color: #409eff;
+    font-size: 20px;
+    font-weight: 600;
+  }
+  
+  .family-description {
+    color: #606266;
+    margin-bottom: 16px;
+    line-height: 1.6;
+  }
 }
 
 .family-actions {
-  margin-top: 16px;
-}
-
-.family-actions .ant-btn {
-  margin-right: 8px;
+  margin-top: 24px;
+  
+  .el-button {
+    margin-right: 12px;
+  }
 }
 
 .member-actions {
-  margin-bottom: 16px;
-}
-
-.member-actions .ant-btn {
-  margin-right: 8px;
+  margin-bottom: 24px;
+  
+  .el-button {
+    margin-right: 12px;
+  }
 }
 
 .activity-content {
   margin-bottom: 4px;
   font-weight: 500;
+  color: #303133;
 }
 
 .activity-time {
-  color: #999;
+  color: #909399;
   font-size: 12px;
   margin: 0;
 }
 
-.text-right {
+.dialog-footer {
   text-align: right;
+}
+
+// 移动端适配
+@media (max-width: 768px) {
+  .family-page {
+    padding: 0;
+    
+    .family-info-card,
+    .member-card,
+    .activity-card,
+    .stats-card {
+      margin: 0 0 16px 0;
+      border-radius: 0;
+    }
+  }
+  
+  .family-avatar {
+    .family-name {
+      font-size: 18px;
+    }
+  }
+  
+  .family-actions,
+  .member-actions {
+    .el-button {
+      width: 100%;
+      margin-right: 0;
+      margin-bottom: 8px;
+    }
+  }
+  
+  .el-table {
+    font-size: 12px;
+    
+    .el-table__cell {
+      padding: 8px 4px;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .family-info-card,
+  .member-card,
+  .activity-card,
+  .stats-card {
+    .card-title {
+      font-size: 16px;
+    }
+  }
+  
+  .family-avatar {
+    .family-name {
+      font-size: 16px;
+    }
+  }
 }
 </style>

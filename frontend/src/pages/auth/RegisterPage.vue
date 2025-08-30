@@ -1,107 +1,112 @@
 <template>
-  <div class="auth-page">
-    <div class="auth-container">
-      <div class="auth-card">
-        <div class="auth-header">
-          <h1 class="auth-title">食光家</h1>
-          <p class="auth-subtitle">智能家庭餐饮助手</p>
+  <div class="register-page">
+    <div class="register-container">
+      <div class="register-form">
+        <div class="form-header">
+          <h1 class="title">加入食光家</h1>
+          <p class="subtitle">创建您的智能烹饪账户</p>
         </div>
-
-        <a-form
+        
+        <el-form
+          ref="registerFormRef"
           :model="formData"
           :rules="rules"
-          @finish="handleSubmit"
-          layout="vertical"
-          class="auth-form"
+          @submit.prevent="handleSubmit"
+          class="register-form-content"
         >
-          <a-form-item label="用户名" name="username">
-            <a-input
-              v-model:value="formData.username"
-              size="large"
+          <el-form-item prop="username" label="用户名">
+            <el-input
+              v-model="formData.username"
               placeholder="请输入用户名"
-              prefix-icon="user"
-            />
-          </a-form-item>
-
-          <a-form-item label="邮箱" name="email">
-            <a-input
-              v-model:value="formData.email"
               size="large"
+              prefix-icon="User"
+            />
+          </el-form-item>
+          
+          <el-form-item prop="email" label="邮箱">
+            <el-input
+              v-model="formData.email"
               placeholder="请输入邮箱地址"
-              prefix-icon="mail"
-            />
-          </a-form-item>
-
-          <a-form-item label="手机号" name="phone">
-            <a-input
-              v-model:value="formData.phone"
               size="large"
-              placeholder="请输入手机号（可选）"
-              prefix-icon="phone"
+              prefix-icon="Message"
             />
-          </a-form-item>
-
-          <a-form-item label="密码" name="password">
-            <a-input-password
-              v-model:value="formData.password"
+          </el-form-item>
+          
+          <el-form-item prop="phone" label="手机号">
+            <el-input
+              v-model="formData.phone"
+              placeholder="请输入手机号"
               size="large"
+              prefix-icon="Phone"
+            />
+          </el-form-item>
+          
+          <el-form-item prop="password" label="密码">
+            <el-input
+              v-model="formData.password"
+              type="password"
               placeholder="请输入密码"
-              prefix-icon="lock"
-            />
-          </a-form-item>
-
-          <a-form-item label="确认密码" name="confirmPassword">
-            <a-input-password
-              v-model:value="formData.confirmPassword"
               size="large"
-              placeholder="请再次输入密码"
-              prefix-icon="lock"
+              prefix-icon="Lock"
+              show-password
             />
-          </a-form-item>
-
-          <a-form-item>
-            <a-button
+          </el-form-item>
+          
+          <el-form-item prop="confirmPassword" label="确认密码">
+            <el-input
+              v-model="formData.confirmPassword"
+              type="password"
+              placeholder="请再次输入密码"
+              size="large"
+              prefix-icon="Lock"
+              show-password
+            />
+          </el-form-item>
+          
+          <el-form-item>
+            <el-button
               type="primary"
-              html-type="submit"
               size="large"
               :loading="isLoading"
-              class="auth-button"
-              block
+              @click="handleSubmit"
+              class="register-button"
             >
               注册
-            </a-button>
-          </a-form-item>
-        </a-form>
-
-        <div class="auth-footer">
-          <p>
-            已有账号？
-            <router-link to="/login" class="auth-link">立即登录</router-link>
+            </el-button>
+          </el-form-item>
+        </el-form>
+        
+        <div class="form-footer">
+          <p class="login-text">
+            已有账户？
+            <el-link type="primary" @click="goToLogin">
+              立即登录
+            </el-link>
           </p>
         </div>
-
-        <div v-if="error" class="error-message">
-          {{ error }}
-        </div>
-
-        <div class="feature-display">
-          <h3>加入食光家，享受智能烹饪</h3>
-          <div class="feature-grid">
+      </div>
+      
+      <div class="register-image">
+        <div class="image-content">
+          <h2>食光家</h2>
+          <p>让烹饪更智能，让生活更美好</p>
+          
+          <div class="features">
             <div class="feature-item">
-              <a-icon type="robot" />
+              <el-icon><Robot /></el-icon>
               <span>AI智能助手</span>
             </div>
             <div class="feature-item">
-              <a-icon type="team" />
-              <span>家庭协作</span>
+              <el-icon><UserFilled /></el-icon>
+              <span>家庭共享</span>
             </div>
             <div class="feature-item">
-              <a-icon type="safety" />
-              <span>营养健康</span>
+              <el-icon><Shield /></el-icon>
+              <span>安全可靠</span>
             </div>
             <div class="feature-item">
-              <a-icon type="star" />
-              <span>个性化推荐</span>
+              <el-icon><Star /></el-icon>
+              <span>品质保证</span>
             </div>
           </div>
         </div>
@@ -113,12 +118,16 @@
 <script setup lang="ts">
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
-import { message } from 'ant-design-vue'
+import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
+import { User, Message, Phone, Lock, Robot, UserFilled, Shield, Star } from '@element-plus/icons-vue'
 import { useAuthStore } from '@/stores/authStore'
 import type { RegisterRequest } from '@/types/auth'
 
 const router = useRouter()
 const authStore = useAuthStore()
+
+const registerFormRef = ref<FormInstance>()
+const isLoading = ref(false)
 
 const formData = reactive<RegisterRequest>({
   username: '',
@@ -128,26 +137,18 @@ const formData = reactive<RegisterRequest>({
   confirmPassword: ''
 })
 
-const isLoading = ref(false)
-const error = ref('')
-
-const validateConfirmPassword = async (_rule: any, value: string) => {
-  if (value !== formData.password) {
-    throw new Error('两次输入的密码不一致')
-  }
-}
-
-const rules = {
+const rules: FormRules = {
   username: [
     { required: true, message: '请输入用户名', trigger: 'blur' },
-    { min: 2, max: 20, message: '用户名长度在2-20个字符之间', trigger: 'blur' }
+    { min: 2, max: 20, message: '用户名长度在2到20个字符', trigger: 'blur' }
   ],
   email: [
     { required: true, message: '请输入邮箱地址', trigger: 'blur' },
-    { type: 'email', message: '请输入有效的邮箱地址', trigger: 'blur' }
+    { type: 'email', message: '请输入正确的邮箱格式', trigger: 'blur' }
   ],
   phone: [
-    { pattern: /^1[3-9]\d{9}$/, message: '请输入有效的手机号码', trigger: 'blur' }
+    { required: true, message: '请输入手机号', trigger: 'blur' },
+    { pattern: /^1[3-9]\d{9}$/, message: '请输入正确的手机号格式', trigger: 'blur' }
   ],
   password: [
     { required: true, message: '请输入密码', trigger: 'blur' },
@@ -155,28 +156,47 @@ const rules = {
   ],
   confirmPassword: [
     { required: true, message: '请确认密码', trigger: 'blur' },
-    { validator: validateConfirmPassword, trigger: 'blur' }
+    {
+      validator: (rule, value, callback) => {
+        if (value !== formData.password) {
+          callback(new Error('两次输入的密码不一致'))
+        } else {
+          callback()
+        }
+      },
+      trigger: 'blur'
+    }
   ]
 }
 
 const handleSubmit = async () => {
+  if (!registerFormRef.value) return
+  
   try {
+    await registerFormRef.value.validate()
     isLoading.value = true
-    error.value = ''
     
     await authStore.register(formData)
-    message.success('注册成功！欢迎加入食光家！')
+    ElMessage.success('注册成功！欢迎加入食光家！')
     router.push('/dashboard')
   } catch (err: any) {
-    error.value = err.message || '注册失败，请重试'
+    if (err.message) {
+      ElMessage.error(err.message)
+    } else {
+      ElMessage.error('注册失败，请检查输入信息')
+    }
   } finally {
     isLoading.value = false
   }
 }
+
+const goToLogin = () => {
+  router.push('/login')
+}
 </script>
 
-<style scoped>
-.auth-page {
+<style lang="less" scoped>
+.register-page {
   min-height: 100vh;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   display: flex;
@@ -185,115 +205,175 @@ const handleSubmit = async () => {
   padding: 20px;
 }
 
-.auth-container {
-  width: 100%;
-  max-width: 480px;
-}
-
-.auth-card {
+.register-container {
   background: white;
-  border-radius: 16px;
-  padding: 40px;
+  border-radius: 20px;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  width: 100%;
+  max-width: 1000px;
+  display: flex;
+  min-height: 600px;
 }
 
-.auth-header {
+.register-form {
+  flex: 1;
+  padding: 60px 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.form-header {
   text-align: center;
-  margin-bottom: 32px;
+  margin-bottom: 40px;
+  
+  .title {
+    font-size: 32px;
+    font-weight: 700;
+    color: #333;
+    margin: 0 0 12px 0;
+  }
+  
+  .subtitle {
+    font-size: 16px;
+    color: #666;
+    margin: 0;
+  }
 }
 
-.auth-title {
-  font-size: 32px;
-  font-weight: bold;
-  color: #1890ff;
-  margin: 0 0 8px 0;
+.register-form-content {
+  .el-form-item {
+    margin-bottom: 24px;
+  }
 }
 
-.auth-subtitle {
-  font-size: 16px;
-  color: #666;
-  margin: 0;
-}
-
-.auth-form {
-  margin-bottom: 24px;
-}
-
-.auth-button {
+.register-button {
+  width: 100%;
   height: 48px;
   font-size: 16px;
-  font-weight: 500;
+  font-weight: 600;
+  border-radius: 24px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  border: none;
+  
+  &:hover {
+    background: linear-gradient(135deg, #5a6fd8, #6a4190);
+  }
 }
 
-.auth-footer {
+.form-footer {
   text-align: center;
-  margin-bottom: 24px;
+  margin-top: 32px;
+  
+  .login-text {
+    color: #666;
+    margin: 0;
+    
+    .el-link {
+      font-weight: 600;
+    }
+  }
 }
 
-.auth-link {
-  color: #1890ff;
-  text-decoration: none;
-}
-
-.auth-link:hover {
-  text-decoration: underline;
-}
-
-.error-message {
-  background: #fff2f0;
-  border: 1px solid #ffccc7;
-  color: #ff4d4f;
-  padding: 12px;
-  border-radius: 6px;
-  margin-bottom: 24px;
+.register-image {
+  flex: 1;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
   text-align: center;
+  
+  .image-content {
+    h2 {
+      font-size: 48px;
+      font-weight: 700;
+      margin: 0 0 20px 0;
+    }
+    
+    p {
+      font-size: 18px;
+      margin: 0 0 40px 0;
+      opacity: 0.9;
+    }
+  }
 }
 
-.feature-display {
-  text-align: center;
-  padding-top: 24px;
-  border-top: 1px solid #f0f0f0;
-}
-
-.feature-display h3 {
-  color: #333;
-  margin-bottom: 16px;
-  font-size: 16px;
-}
-
-.feature-grid {
+.features {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
+  gap: 20px;
+  max-width: 300px;
+  margin: 0 auto;
 }
 
 .feature-item {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
   gap: 8px;
-  padding: 12px;
-  background: #f8f9fa;
-  border-radius: 8px;
-  color: #666;
-}
-
-.feature-item .anticon {
-  font-size: 18px;
-  color: #1890ff;
-}
-
-@media (max-width: 480px) {
-  .auth-card {
-    padding: 24px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  
+  .el-icon {
+    font-size: 24px;
+    color: #ffd700;
   }
   
-  .auth-title {
+  span {
+    font-size: 14px;
+    font-weight: 500;
+  }
+}
+
+// 移动端适配
+@media (max-width: 768px) {
+  .register-container {
+    flex-direction: column;
+    min-height: auto;
+  }
+  
+  .register-form {
+    padding: 40px 24px;
+  }
+  
+  .register-image {
+    padding: 40px 24px;
+    
+    .image-content {
+      h2 {
+        font-size: 32px;
+      }
+      
+      p {
+        font-size: 16px;
+      }
+    }
+  }
+  
+  .form-header .title {
     font-size: 28px;
   }
   
-  .feature-grid {
+  .features {
     grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .register-page {
+    padding: 16px;
+  }
+  
+  .register-form {
+    padding: 32px 20px;
+  }
+  
+  .form-header .title {
+    font-size: 24px;
   }
 }
 </style>

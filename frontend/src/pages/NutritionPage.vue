@@ -1,280 +1,301 @@
 <template>
   <div class="nutrition-page">
-    <a-row :gutter="24">
+    <el-row :gutter="24">
       <!-- 营养概览 -->
-      <a-col :span="24">
-        <a-card title="营养概览" :bordered="false" class="overview-card">
-          <a-row :gutter="16">
-            <a-col :span="6">
-              <a-statistic 
+      <el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24">
+        <el-card class="overview-card" shadow="never">
+          <template #header>
+            <span class="card-title">营养概览</span>
+          </template>
+          <el-row :gutter="16">
+            <el-col :xs="12" :sm="6" :md="6" :lg="6" :xl="6">
+              <el-statistic 
                 title="今日摄入热量" 
                 :value="nutritionOverview.todayCalories" 
                 suffix="kcal"
                 :value-style="{ color: getCalorieColor(nutritionOverview.todayCalories) }"
               />
-            </a-col>
-            <a-col :span="6">
-              <a-statistic 
+            </el-col>
+            <el-col :xs="12" :sm="6" :md="6" :lg="6" :xl="6">
+              <el-statistic 
                 title="目标热量" 
                 :value="nutritionOverview.targetCalories" 
                 suffix="kcal"
               />
-            </a-col>
-            <a-col :span="6">
-              <a-statistic 
+            </el-col>
+            <el-col :xs="12" :sm="6" :md="6" :lg="6" :xl="6">
+              <el-statistic 
                 title="剩余热量" 
                 :value="nutritionOverview.remainingCalories" 
                 suffix="kcal"
-                :value-style="{ color: nutritionOverview.remainingCalories > 0 ? '#52c41a' : '#ff4d4f' }"
+                :value-style="{ color: nutritionOverview.remainingCalories > 0 ? '#67c23a' : '#f56c6c' }"
               />
-            </a-col>
-            <a-col :span="6">
-              <a-statistic 
+            </el-col>
+            <el-col :xs="12" :sm="6" :md="6" :lg="6" :xl="6">
+              <el-statistic 
                 title="完成度" 
                 :value="nutritionOverview.completionRate" 
                 suffix="%"
                 :value-style="{ color: getCompletionColor(nutritionOverview.completionRate) }"
               />
-            </a-col>
-          </a-row>
-        </a-card>
-      </a-col>
+            </el-col>
+          </el-row>
+        </el-card>
+      </el-col>
 
       <!-- 营养图表 -->
-      <a-col :span="12">
-        <a-card title="本周营养摄入趋势" :bordered="false">
+      <el-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
+        <el-card class="chart-card" shadow="never">
+          <template #header>
+            <span class="card-title">本周营养摄入趋势</span>
+          </template>
           <canvas ref="weeklyChart" width="400" height="200"></canvas>
-        </a-card>
-      </a-col>
+        </el-card>
+      </el-col>
 
-      <a-col :span="12">
-        <a-card title="营养素分布" :bordered="false">
+      <el-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
+        <el-card class="chart-card" shadow="never">
+          <template #header>
+            <span class="card-title">营养素分布</span>
+          </template>
           <canvas ref="nutrientChart" width="400" height="200"></canvas>
-        </a-card>
-      </a-col>
+        </el-card>
+      </el-col>
 
       <!-- 营养计算器 -->
-      <a-col :span="24">
-        <a-card title="营养计算器" :bordered="false">
-          <a-form :model="nutritionCalculator" layout="vertical">
-            <a-row :gutter="16">
-              <a-col :span="8">
-                <a-form-item label="年龄">
-                  <a-input-number 
-                    v-model:value="nutritionCalculator.age" 
+      <el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24">
+        <el-card class="calculator-card" shadow="never">
+          <template #header>
+            <span class="card-title">营养计算器</span>
+          </template>
+          <el-form :model="nutritionCalculator" label-width="120px" size="large">
+            <el-row :gutter="16">
+              <el-col :xs="24" :sm="8" :md="8" :lg="8" :xl="8">
+                <el-form-item label="年龄">
+                  <el-input-number 
+                    v-model="nutritionCalculator.age" 
                     :min="1" 
                     :max="120"
                     style="width: 100%"
                   />
-                </a-form-item>
-              </a-col>
-              <a-col :span="8">
-                <a-form-item label="性别">
-                  <a-select v-model:value="nutritionCalculator.gender">
-                    <a-select-option value="male">男</a-select-option>
-                    <a-select-option value="female">女</a-select-option>
-                  </a-select>
-                </a-form-item>
-              </a-col>
-              <a-col :span="8">
-                <a-form-item label="体重 (kg)">
-                  <a-input-number 
-                    v-model:value="nutritionCalculator.weight" 
+                </el-form-item>
+              </el-col>
+              <el-col :xs="24" :sm="8" :md="8" :lg="8" :xl="8">
+                <el-form-item label="性别">
+                  <el-select v-model="nutritionCalculator.gender" style="width: 100%">
+                    <el-option label="男" value="male" />
+                    <el-option label="女" value="female" />
+                  </el-select>
+                </el-form-item>
+              </el-col>
+              <el-col :xs="24" :sm="8" :md="8" :lg="8" :xl="8">
+                <el-form-item label="体重 (kg)">
+                  <el-input-number 
+                    v-model="nutritionCalculator.weight" 
                     :min="20" 
                     :max="200"
                     style="width: 100%"
                   />
-                </a-form-item>
-              </a-col>
-            </a-row>
-            <a-row :gutter="16">
-              <a-col :span="8">
-                <a-form-item label="身高 (cm)">
-                  <a-input-number 
-                    v-model:value="nutritionCalculator.height" 
+                </el-form-item>
+              </el-col>
+            </el-row>
+            <el-row :gutter="16">
+              <el-col :xs="24" :sm="8" :md="8" :lg="8" :xl="8">
+                <el-form-item label="身高 (cm)">
+                  <el-input-number 
+                    v-model="nutritionCalculator.height" 
                     :min="100" 
                     :max="250"
                     style="width: 100%"
                   />
-                </a-form-item>
-              </a-col>
-              <a-col :span="8">
-                <a-form-item label="活动水平">
-                  <a-select v-model:value="nutritionCalculator.activityLevel">
-                    <a-select-option value="sedentary">久坐不动</a-select-option>
-                    <a-select-option value="lightly">轻度活动</a-select-option>
-                    <a-select-option value="moderately">中度活动</a-select-option>
-                    <a-select-option value="very">重度活动</a-select-option>
-                    <a-select-option value="extremely">极重度活动</a-select-option>
-                  </a-select>
-                </a-form-item>
-              </a-col>
-              <a-col :span="8">
-                <a-form-item label="目标">
-                  <a-select v-model:value="nutritionCalculator.goal">
-                    <a-select-option value="lose">减重</a-select-option>
-                    <a-select-option value="maintain">维持体重</a-select-option>
-                    <a-select-option value="gain">增重</a-select-option>
-                  </a-select>
-                </a-form-item>
-              </a-col>
-            </a-row>
-            <a-form-item>
-              <a-button type="primary" @click="calculateNutrition">
+                </el-form-item>
+              </el-col>
+              <el-col :xs="24" :sm="8" :md="8" :lg="8" :xl="8">
+                <el-form-item label="活动水平">
+                  <el-select v-model="nutritionCalculator.activityLevel" style="width: 100%">
+                    <el-option label="久坐不动" value="sedentary" />
+                    <el-option label="轻度活动" value="lightly" />
+                    <el-option label="中度活动" value="moderately" />
+                    <el-option label="重度活动" value="very" />
+                    <el-option label="极重度活动" value="extremely" />
+                  </el-select>
+                </el-form-item>
+              </el-col>
+              <el-col :xs="24" :sm="8" :md="8" :lg="8" :xl="8">
+                <el-form-item label="目标">
+                  <el-select v-model="nutritionCalculator.goal" style="width: 100%">
+                    <el-option label="减重" value="lose" />
+                    <el-option label="维持体重" value="maintain" />
+                    <el-option label="增重" value="gain" />
+                  </el-select>
+                </el-form-item>
+              </el-col>
+            </el-row>
+            <el-form-item>
+              <el-button type="primary" @click="calculateNutrition" size="large">
                 计算营养需求
-              </a-button>
-            </a-form-item>
-          </a-form>
+              </el-button>
+            </el-form-item>
+          </el-form>
 
           <!-- 计算结果 -->
           <div v-if="calculationResult" class="calculation-result">
-            <a-divider />
-            <h4>计算结果</h4>
-            <a-row :gutter="16">
-              <a-col :span="6">
-                <a-statistic title="基础代谢率" :value="calculationResult.bmr" suffix="kcal" />
-              </a-col>
-              <a-col :span="6">
-                <a-statistic title="每日总消耗" :value="calculationResult.tdee" suffix="kcal" />
-              </a-col>
-              <a-col :span="6">
-                <a-statistic title="建议摄入" :value="calculationResult.recommendedCalories" suffix="kcal" />
-              </a-col>
-              <a-col :span="6">
-                <a-statistic title="蛋白质" :value="calculationResult.protein" suffix="g" />
-              </a-col>
-            </a-row>
+            <el-divider />
+            <h4 class="result-title">计算结果</h4>
+            <el-row :gutter="16">
+              <el-col :xs="12" :sm="6" :md="6" :lg="6" :xl="6">
+                <el-statistic title="基础代谢率" :value="calculationResult.bmr" suffix="kcal" />
+              </el-col>
+              <el-col :xs="12" :sm="6" :md="6" :lg="6" :xl="6">
+                <el-statistic title="每日总消耗" :value="calculationResult.tdee" suffix="kcal" />
+              </el-col>
+              <el-col :xs="12" :sm="6" :md="6" :lg="6" :xl="6">
+                <el-statistic title="建议摄入" :value="calculationResult.recommendedCalories" suffix="kcal" />
+              </el-col>
+              <el-col :xs="12" :sm="6" :md="6" :lg="6" :xl="6">
+                <el-statistic title="蛋白质" :value="calculationResult.protein" suffix="g" />
+              </el-col>
+            </el-row>
           </div>
-        </a-card>
-      </a-col>
+        </el-card>
+      </el-col>
 
       <!-- 营养建议 -->
-      <a-col :span="24">
-        <a-card title="个性化营养建议" :bordered="false">
-          <a-tabs v-model:activeKey="activeTab">
-            <a-tab-pane key="general" tab="一般建议">
+      <el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24">
+        <el-card class="advice-card" shadow="never">
+          <template #header>
+            <span class="card-title">个性化营养建议</span>
+          </template>
+          <el-tabs v-model="activeTab" type="border-card">
+            <el-tab-pane label="一般建议" name="general">
               <div class="nutrition-tips">
-                <a-alert
+                <el-alert
                   v-for="(tip, index) in generalTips"
                   :key="index"
-                  :message="tip.title"
+                  :title="tip.title"
                   :description="tip.content"
                   type="info"
+                  :closable="false"
                   show-icon
                   class="tip-item"
                 />
               </div>
-            </a-tab-pane>
-            <a-tab-pane key="dietary" tab="饮食建议">
+            </el-tab-pane>
+            <el-tab-pane label="饮食建议" name="dietary">
               <div class="dietary-recommendations">
-                <a-row :gutter="16">
-                  <a-col :span="12">
-                    <h4>推荐食物</h4>
-                    <a-list
-                      :data-source="recommendedFoods"
-                      size="small"
-                    >
-                      <template #renderItem="{ item }">
-                        <a-list-item>
-                          <a-list-item-meta>
-                            <template #title>{{ item.name }}</template>
-                            <template #description>{{ item.benefits }}</template>
-                          </a-list-item-meta>
-                        </a-list-item>
-                      </template>
-                    </a-list>
-                  </a-col>
-                  <a-col :span="12">
-                    <h4>限制食物</h4>
-                    <a-list
-                      :data-source="limitedFoods"
-                      size="small"
-                    >
-                      <template #renderItem="{ item }">
-                        <a-list-item>
-                          <a-list-item-meta>
-                            <template #title>{{ item.name }}</template>
-                            <template #description>{{ item.reason }}</template>
-                          </a-list-item-meta>
-                        </a-list-item>
-                      </template>
-                    </a-list>
-                  </a-col>
-                </a-row>
+                <el-row :gutter="16">
+                  <el-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12">
+                    <h4 class="recommendation-title">推荐食物</h4>
+                    <el-list>
+                      <el-list-item v-for="(item, index) in recommendedFoods" :key="index">
+                        <template #default>
+                          <div class="food-item">
+                            <h5>{{ item.name }}</h5>
+                            <p>{{ item.benefits }}</p>
+                          </div>
+                        </template>
+                      </el-list-item>
+                    </el-list>
+                  </el-col>
+                  <el-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12">
+                    <h4 class="recommendation-title">限制食物</h4>
+                    <el-list>
+                      <el-list-item v-for="(item, index) in limitedFoods" :key="index">
+                        <template #default>
+                          <div class="food-item">
+                            <h5>{{ item.name }}</h5>
+                            <p>{{ item.reason }}</p>
+                          </div>
+                        </template>
+                      </el-list-item>
+                    </el-list>
+                  </el-col>
+                </el-row>
               </div>
-            </a-tab-pane>
-            <a-tab-pane key="supplements" tab="营养补充">
+            </el-tab-pane>
+            <el-tab-pane label="营养补充" name="supplements">
               <div class="supplement-recommendations">
-                <a-table
-                  :columns="supplementColumns"
-                  :data-source="supplementRecommendations"
-                  :pagination="false"
-                  size="small"
-                />
+                <el-table
+                  :data="supplementRecommendations"
+                  :border="true"
+                  size="large"
+                  style="width: 100%"
+                >
+                  <el-table-column prop="nutrient" label="营养素" />
+                  <el-table-column prop="dosage" label="推荐剂量" />
+                  <el-table-column prop="benefit" label="作用" />
+                  <el-table-column prop="caution" label="注意事项" />
+                </el-table>
               </div>
-            </a-tab-pane>
-          </a-tabs>
-        </a-card>
-      </a-col>
+            </el-tab-pane>
+          </el-tabs>
+        </el-card>
+      </el-col>
 
       <!-- 营养报告 -->
-      <a-col :span="24">
-        <a-card title="营养报告" :bordered="false">
-          <a-row :gutter="16">
-            <a-col :span="12">
-              <a-button type="primary" @click="generateReport">
+      <el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24">
+        <el-card class="report-card" shadow="never">
+          <template #header>
+            <span class="card-title">营养报告</span>
+          </template>
+          <el-row :gutter="16">
+            <el-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12">
+              <el-button type="primary" @click="generateReport" size="large">
                 生成营养报告
-              </a-button>
-              <a-button @click="exportReport" :disabled="!nutritionReport">
+              </el-button>
+              <el-button @click="exportReport" :disabled="!nutritionReport" size="large">
                 导出报告
-              </a-button>
-            </a-col>
-            <a-col :span="12" class="text-right">
-              <a-date-picker 
-                v-model:value="reportDate" 
+              </el-button>
+            </el-col>
+            <el-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12" class="date-picker-col">
+              <el-date-picker 
+                v-model="reportDate" 
                 placeholder="选择报告日期"
                 @change="onReportDateChange"
+                style="width: 100%"
+                size="large"
               />
-            </a-col>
-          </a-row>
+            </el-col>
+          </el-row>
 
           <!-- 报告内容 -->
           <div v-if="nutritionReport" class="report-content">
-            <a-divider />
+            <el-divider />
             <div class="report-summary">
-              <h4>营养摄入总结</h4>
-              <a-descriptions :column="2" bordered>
-                <a-descriptions-item label="总热量">{{ nutritionReport.totalCalories }} kcal</a-descriptions-item>
-                <a-descriptions-item label="蛋白质">{{ nutritionReport.protein }}g</a-descriptions-item>
-                <a-descriptions-item label="脂肪">{{ nutritionReport.fat }}g</a-descriptions-item>
-                <a-descriptions-item label="碳水化合物">{{ nutritionReport.carbs }}g</a-descriptions-item>
-                <a-descriptions-item label="膳食纤维">{{ nutritionReport.fiber }}g</a-descriptions-item>
-                <a-descriptions-item label="维生素C">{{ nutritionReport.vitaminC }}mg</a-descriptions-item>
-              </a-descriptions>
+              <h4 class="report-title">营养摄入总结</h4>
+              <el-descriptions :column="2" border>
+                <el-descriptions-item label="总热量">{{ nutritionReport.totalCalories }} kcal</el-descriptions-item>
+                <el-descriptions-item label="蛋白质">{{ nutritionReport.protein }}g</el-descriptions-item>
+                <el-descriptions-item label="脂肪">{{ nutritionReport.fat }}g</el-descriptions-item>
+                <el-descriptions-item label="碳水化合物">{{ nutritionReport.carbs }}g</el-descriptions-item>
+                <el-descriptions-item label="膳食纤维">{{ nutritionReport.fiber }}g</el-descriptions-item>
+                <el-descriptions-item label="维生素C">{{ nutritionReport.vitaminC }}mg</el-descriptions-item>
+              </el-descriptions>
             </div>
 
             <div class="report-analysis">
-              <h4>营养分析</h4>
-              <a-alert
+              <h4 class="report-title">营养分析</h4>
+              <el-alert
                 v-for="(analysis, index) in nutritionReport.analysis"
                 :key="index"
-                :message="analysis.title"
+                :title="analysis.title"
                 :description="analysis.content"
                 :type="analysis.type"
+                :closable="false"
                 show-icon
                 class="analysis-item"
               />
             </div>
           </div>
-        </a-card>
-      </a-col>
-    </a-row>
+        </el-card>
+      </el-col>
+    </el-row>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive, onMounted, nextTick } from 'vue'
-import { message } from 'ant-design-vue'
+import { ElMessage } from 'element-plus'
 import Chart from 'chart.js/auto'
 
 // 响应式数据
@@ -333,13 +354,6 @@ const limitedFoods = ref([
   { name: '油炸食品', reason: '高热量，营养密度低' }
 ])
 
-const supplementColumns = [
-  { title: '营养素', dataIndex: 'nutrient', key: 'nutrient' },
-  { title: '推荐剂量', dataIndex: 'dosage', key: 'dosage' },
-  { title: '作用', dataIndex: 'benefit', key: 'benefit' },
-  { title: '注意事项', dataIndex: 'caution', key: 'caution' }
-]
-
 const supplementRecommendations = ref([
   {
     nutrient: '维生素D',
@@ -360,15 +374,15 @@ const nutritionReport = ref(null)
 
 // 方法
 const getCalorieColor = (calories: number) => {
-  if (calories < 1500) return '#52c41a'
-  if (calories < 2000) return '#faad14'
-  return '#ff4d4f'
+  if (calories < 1500) return '#67c23a'
+  if (calories < 2000) return '#e6a23c'
+  return '#f56c6c'
 }
 
 const getCompletionColor = (rate: number) => {
-  if (rate < 60) return '#ff4d4f'
-  if (rate < 80) return '#faad14'
-  return '#52c41a'
+  if (rate < 60) return '#f56c6c'
+  if (rate < 80) return '#e6a23c'
+  return '#67c23a'
 }
 
 const calculateNutrition = () => {
@@ -411,7 +425,7 @@ const calculateNutrition = () => {
     protein: Math.round(protein)
   }
   
-  message.success('营养需求计算完成！')
+  ElMessage.success('营养需求计算完成！')
 }
 
 const generateReport = () => {
@@ -442,16 +456,16 @@ const generateReport = () => {
     ]
   }
   
-  message.success('营养报告生成完成！')
+  ElMessage.success('营养报告生成完成！')
 }
 
 const exportReport = () => {
-  message.info('报告导出功能开发中...')
+  ElMessage.info('报告导出功能开发中...')
 }
 
 const onReportDateChange = (date: any) => {
   if (date) {
-    message.info(`选择日期: ${date.format('YYYY-MM-DD')}`)
+    ElMessage.info(`选择日期: ${date.toLocaleDateString()}`)
   }
 }
 
@@ -467,8 +481,8 @@ const initCharts = async () => {
         datasets: [{
           label: '热量摄入',
           data: [1800, 1950, 1700, 2100, 1850, 2200, 1900],
-          borderColor: '#1890ff',
-          backgroundColor: 'rgba(24, 144, 255, 0.1)',
+          borderColor: '#409eff',
+          backgroundColor: 'rgba(64, 158, 255, 0.1)',
           tension: 0.4
         }]
       },
@@ -491,7 +505,7 @@ const initCharts = async () => {
         labels: ['蛋白质', '脂肪', '碳水化合物'],
         datasets: [{
           data: [20, 30, 50],
-          backgroundColor: ['#52c41a', '#faad14', '#1890ff']
+          backgroundColor: ['#67c23a', '#e6a23c', '#409eff']
         }]
       },
       options: {
@@ -512,55 +526,152 @@ onMounted(() => {
 })
 </script>
 
-<style scoped>
+<style lang="less" scoped>
 .nutrition-page {
-  padding: 24px;
+  padding: 0;
 }
 
-.overview-card {
+.overview-card,
+.chart-card,
+.calculator-card,
+.advice-card,
+.report-card {
   margin-bottom: 24px;
+  border: none;
+  box-shadow: none;
+  
+  .card-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #303133;
+  }
 }
 
 .calculation-result {
-  margin-top: 16px;
-  padding: 16px;
-  background: #fafafa;
-  border-radius: 6px;
+  margin-top: 24px;
+  padding: 24px;
+  background: #f5f7fa;
+  border-radius: 8px;
+  
+  .result-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #303133;
+    margin: 0 0 20px 0;
+  }
 }
 
-.nutrition-tips .tip-item {
-  margin-bottom: 8px;
+.nutrition-tips {
+  .tip-item {
+    margin-bottom: 16px;
+  }
 }
 
-.dietary-recommendations h4 {
-  margin-bottom: 16px;
-  color: #1890ff;
+.dietary-recommendations {
+  .recommendation-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #409eff;
+    margin-bottom: 20px;
+  }
+  
+  .food-item {
+    h5 {
+      font-size: 16px;
+      font-weight: 600;
+      color: #303133;
+      margin: 0 0 8px 0;
+    }
+    
+    p {
+      color: #606266;
+      margin: 0;
+      line-height: 1.6;
+    }
+  }
 }
 
 .supplement-recommendations {
-  margin-top: 16px;
+  margin-top: 20px;
 }
 
 .report-content {
-  margin-top: 16px;
+  margin-top: 24px;
+  
+  .report-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #303133;
+    margin: 0 0 20px 0;
+  }
+  
+  .report-summary,
+  .report-analysis {
+    margin-bottom: 32px;
+  }
+  
+  .analysis-item {
+    margin-bottom: 16px;
+  }
 }
 
-.report-summary,
-.report-analysis {
-  margin-bottom: 24px;
-}
-
-.report-summary h4,
-.report-analysis h4 {
-  margin-bottom: 16px;
-  color: #1890ff;
-}
-
-.analysis-item {
-  margin-bottom: 8px;
-}
-
-.text-right {
+.date-picker-col {
   text-align: right;
+}
+
+// 移动端适配
+@media (max-width: 768px) {
+  .nutrition-page {
+    padding: 0;
+    
+    .overview-card,
+    .chart-card,
+    .calculator-card,
+    .advice-card,
+    .report-card {
+      margin: 0 0 16px 0;
+      border-radius: 0;
+    }
+  }
+  
+  .calculation-result {
+    margin-top: 16px;
+    padding: 16px;
+  }
+  
+  .date-picker-col {
+    text-align: left;
+    margin-top: 16px;
+  }
+  
+  .dietary-recommendations {
+    .recommendation-title {
+      font-size: 16px;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .overview-card,
+  .chart-card,
+  .calculator-card,
+  .advice-card,
+  .report-card {
+    .card-title {
+      font-size: 16px;
+    }
+  }
+  
+  .calculation-result {
+    .result-title {
+      font-size: 16px;
+    }
+  }
+  
+  .report-content {
+    .report-title {
+      font-size: 16px;
+    }
+  }
 }
 </style>

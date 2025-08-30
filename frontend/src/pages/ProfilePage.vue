@@ -1,290 +1,324 @@
 <template>
   <div class="profile-page">
-    <a-row :gutter="24">
+    <el-row :gutter="24">
       <!-- 个人信息 -->
-      <a-col :span="8">
-        <a-card title="个人信息" :bordered="false" class="profile-card">
+      <el-col :xs="24" :sm="24" :md="8" :lg="8" :xl="8">
+        <el-card class="profile-card" shadow="never">
+          <template #header>
+            <span class="card-title">个人信息</span>
+          </template>
           <div class="profile-avatar">
-            <a-upload
+            <el-upload
               v-model:file-list="avatarFileList"
               :before-upload="beforeAvatarUpload"
               :max-count="1"
               list-type="picture-circle"
-              :show-upload-list="false"
+              :show-file-list="false"
             >
               <div class="avatar-upload">
                 <img v-if="userInfo.avatar" :src="userInfo.avatar" alt="头像" />
                 <div v-else class="avatar-placeholder">
-                  <user-outlined />
+                  <el-icon><User /></el-icon>
                   <div>上传头像</div>
                 </div>
               </div>
-            </a-upload>
-            <h2>{{ userInfo.username }}</h2>
+            </el-upload>
+            <h2 class="profile-name">{{ userInfo.username }}</h2>
             <p class="user-email">{{ userInfo.email }}</p>
           </div>
 
-          <a-divider />
+          <el-divider />
 
           <div class="profile-stats">
-            <a-row :gutter="16">
-              <a-col :span="12">
-                <a-statistic title="烹饪次数" :value="profileStats.cookingCount" />
-              </a-col>
-              <a-col :span="12">
-                <a-statistic title="食谱数量" :value="profileStats.recipeCount" />
-              </a-col>
-            </a-row>
-            <a-row :gutter="16" style="margin-top: 16px;">
-              <a-col :span="12">
-                <a-statistic title="平均评分" :value="profileStats.avgRating" :precision="1" />
-              </a-col>
-              <a-col :span="12">
-                <a-statistic title="活跃天数" :value="profileStats.activeDays" />
-              </a-col>
-            </a-row>
+            <el-row :gutter="16">
+              <el-col :span="12">
+                <el-statistic title="烹饪次数" :value="profileStats.cookingCount" />
+              </el-col>
+              <el-col :span="12">
+                <el-statistic title="食谱数量" :value="profileStats.recipeCount" />
+              </el-col>
+            </el-row>
+            <el-row :gutter="16" style="margin-top: 16px;">
+              <el-col :span="12">
+                <el-statistic title="平均评分" :value="profileStats.avgRating" :precision="1" />
+              </el-col>
+              <el-col :span="12">
+                <el-statistic title="活跃天数" :value="profileStats.activeDays" />
+              </el-col>
+            </el-row>
           </div>
 
-          <a-divider />
+          <el-divider />
 
           <div class="profile-actions">
-            <a-button type="primary" @click="showEditProfileModal" block>
+            <el-button type="primary" @click="showEditProfileModal" size="large" style="width: 100%">
               编辑资料
-            </a-button>
-            <a-button @click="showChangePasswordModal" style="margin-top: 8px;" block>
+            </el-button>
+            <el-button @click="showChangePasswordModal" size="large" style="width: 100%; margin-top: 8px;">
               修改密码
-            </a-button>
+            </el-button>
           </div>
-        </a-card>
-      </a-col>
+        </el-card>
+      </el-col>
 
       <!-- 详细信息 -->
-      <a-col :span="16">
-        <a-card title="详细信息" :bordered="false">
-          <a-descriptions :column="2" bordered>
-            <a-descriptions-item label="用户名">{{ userInfo.username }}</a-descriptions-item>
-            <a-descriptions-item label="邮箱">{{ userInfo.email }}</a-descriptions-item>
-            <a-descriptions-item label="手机号">{{ userInfo.phone || '未设置' }}</a-descriptions-item>
-            <a-descriptions-item label="注册时间">{{ userInfo.createdAt }}</a-descriptions-item>
-            <a-descriptions-item label="最后登录">{{ userInfo.lastLogin }}</a-descriptions-item>
-            <a-descriptions-item label="账户状态">
-              <a-tag :color="userInfo.status === 'active' ? 'green' : 'red'">
+      <el-col :xs="24" :sm="24" :md="16" :lg="16" :xl="16">
+        <el-card class="detail-card" shadow="never">
+          <template #header>
+            <span class="card-title">详细信息</span>
+          </template>
+          <el-descriptions :column="2" border>
+            <el-descriptions-item label="用户名">{{ userInfo.username }}</el-descriptions-item>
+            <el-descriptions-item label="邮箱">{{ userInfo.email }}</el-descriptions-item>
+            <el-descriptions-item label="手机号">{{ userInfo.phone || '未设置' }}</el-descriptions-item>
+            <el-descriptions-item label="注册时间">{{ userInfo.createdAt }}</el-descriptions-item>
+            <el-descriptions-item label="最后登录">{{ userInfo.lastLogin }}</el-descriptions-item>
+            <el-descriptions-item label="账户状态">
+              <el-tag :type="userInfo.status === 'active' ? 'success' : 'danger'">
                 {{ userInfo.status === 'active' ? '正常' : '禁用' }}
-              </a-tag>
-            </a-descriptions-item>
-          </a-descriptions>
-        </a-card>
+              </el-tag>
+            </el-descriptions-item>
+          </el-descriptions>
+        </el-card>
 
         <!-- 偏好设置 -->
-        <a-card title="偏好设置" :bordered="false" style="margin-top: 24px;">
-          <a-form :model="preferences" layout="vertical">
-            <a-row :gutter="16">
-              <a-col :span="12">
-                <a-form-item label="默认菜系">
-                  <a-select v-model:value="preferences.defaultCuisine" placeholder="请选择默认菜系">
-                    <a-select-option value="chinese">中餐</a-select-option>
-                    <a-select-option value="western">西餐</a-select-option>
-                    <a-select-option value="japanese">日料</a-select-option>
-                    <a-select-option value="korean">韩料</a-select-option>
-                    <a-select-option value="thai">泰餐</a-select-option>
-                  </a-select>
-                </a-form-item>
-              </a-col>
-              <a-col :span="12">
-                <a-form-item label="难度偏好">
-                  <a-select v-model:value="preferences.difficultyLevel" placeholder="请选择难度偏好">
-                    <a-select-option value="beginner">初学者</a-select-option>
-                    <a-select-option value="intermediate">中级</a-select-option>
-                    <a-select-option value="advanced">高级</a-select-option>
-                  </a-select>
-                </a-form-item>
-              </a-col>
-            </a-row>
-            <a-row :gutter="16">
-              <a-col :span="12">
-                <a-form-item label="口味偏好">
-                  <a-select
-                    v-model:value="preferences.tastePreferences"
-                    mode="multiple"
+        <el-card class="preferences-card" shadow="never" style="margin-top: 24px;">
+          <template #header>
+            <span class="card-title">偏好设置</span>
+          </template>
+          <el-form :model="preferences" label-width="120px" size="large">
+            <el-row :gutter="16">
+              <el-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12">
+                <el-form-item label="默认菜系">
+                  <el-select v-model="preferences.defaultCuisine" placeholder="请选择默认菜系" style="width: 100%">
+                    <el-option label="中餐" value="chinese" />
+                    <el-option label="西餐" value="western" />
+                    <el-option label="日料" value="japanese" />
+                    <el-option label="韩料" value="korean" />
+                    <el-option label="泰餐" value="thai" />
+                  </el-select>
+                </el-form-item>
+              </el-col>
+              <el-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12">
+                <el-form-item label="难度偏好">
+                  <el-select v-model="preferences.difficultyLevel" placeholder="请选择难度偏好" style="width: 100%">
+                    <el-option label="初学者" value="beginner" />
+                    <el-option label="中级" value="intermediate" />
+                    <el-option label="高级" value="advanced" />
+                  </el-select>
+                </el-form-item>
+              </el-col>
+            </el-row>
+            <el-row :gutter="16">
+              <el-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12">
+                <el-form-item label="口味偏好">
+                  <el-select
+                    v-model="preferences.tastePreferences"
+                    multiple
                     placeholder="请选择口味偏好"
+                    style="width: 100%"
                   >
-                    <a-select-option value="spicy">辣</a-select-option>
-                    <a-select-option value="sweet">甜</a-select-option>
-                    <a-select-option value="sour">酸</a-select-option>
-                    <a-select-option value="salty">咸</a-select-option>
-                    <a-select-option value="umami">鲜</a-select-option>
-                  </a-select>
-                </a-form-item>
-              </a-col>
-              <a-col :span="12">
-                <a-form-item label="烹饪时间偏好">
-                  <a-select v-model:value="preferences.cookingTime" placeholder="请选择烹饪时间偏好">
-                    <a-select-option value="quick">快速（15分钟内）</a-select-option>
-                    <a-select-option value="medium">中等（15-45分钟）</a-select-option>
-                    <a-select-option value="slow">慢炖（45分钟以上）</a-select-option>
-                  </a-select>
-                </a-form-item>
-              </a-col>
-            </a-row>
-            <a-form-item>
-              <a-button type="primary" @click="savePreferences">
+                    <el-option label="辣" value="spicy" />
+                    <el-option label="甜" value="sweet" />
+                    <el-option label="酸" value="sour" />
+                    <el-option label="咸" value="salty" />
+                    <el-option label="鲜" value="umami" />
+                  </el-select>
+                </el-form-item>
+              </el-col>
+              <el-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12">
+                <el-form-item label="烹饪时间偏好">
+                  <el-select v-model="preferences.cookingTime" placeholder="请选择烹饪时间偏好" style="width: 100%">
+                    <el-option label="快速（15分钟内）" value="quick" />
+                    <el-option label="中等（15-45分钟）" value="medium" />
+                    <el-option label="慢炖（45分钟以上）" value="slow" />
+                  </el-select>
+                </el-form-item>
+              </el-col>
+            </el-row>
+            <el-form-item>
+              <el-button type="primary" @click="savePreferences" size="large">
                 保存偏好设置
-              </a-button>
-            </a-form-item>
-          </a-form>
-        </a-card>
+              </el-button>
+            </el-form-item>
+          </el-form>
+        </el-card>
 
         <!-- 营养目标 -->
-        <a-card title="营养目标" :bordered="false" style="margin-top: 24px;">
-          <a-form :model="nutritionGoals" layout="vertical">
-            <a-row :gutter="16">
-              <a-col :span="8">
-                <a-form-item label="每日热量目标 (kcal)">
-                  <a-input-number 
-                    v-model:value="nutritionGoals.dailyCalories" 
+        <el-card class="nutrition-card" shadow="never" style="margin-top: 24px;">
+          <template #header>
+            <span class="card-title">营养目标</span>
+          </template>
+          <el-form :model="nutritionGoals" label-width="140px" size="large">
+            <el-row :gutter="16">
+              <el-col :xs="24" :sm="8" :md="8" :lg="8" :xl="8">
+                <el-form-item label="每日热量目标 (kcal)">
+                  <el-input-number 
+                    v-model="nutritionGoals.dailyCalories" 
                     :min="1000" 
                     :max="5000"
                     style="width: 100%"
                   />
-                </a-form-item>
-              </a-col>
-              <a-col :span="8">
-                <a-form-item label="蛋白质目标 (g)">
-                  <a-input-number 
-                    v-model:value="nutritionGoals.protein" 
+                </el-form-item>
+              </el-col>
+              <el-col :xs="24" :sm="8" :md="8" :lg="8" :xl="8">
+                <el-form-item label="蛋白质目标 (g)">
+                  <el-input-number 
+                    v-model="nutritionGoals.protein" 
                     :min="20" 
                     :max="200"
                     style="width: 100%"
                   />
-                </a-form-item>
-              </a-col>
-              <a-col :span="8">
-                <a-form-item label="碳水化合物目标 (g)">
-                  <a-input-number 
-                    v-model:value="nutritionGoals.carbs" 
+                </el-form-item>
+              </el-col>
+              <el-col :xs="24" :sm="8" :md="8" :lg="8" :xl="8">
+                <el-form-item label="碳水化合物目标 (g)">
+                  <el-input-number 
+                    v-model="nutritionGoals.carbs" 
                     :min="50" 
                     :max="500"
                     style="width: 100%"
                   />
-                </a-form-item>
-              </a-col>
-            </a-row>
-            <a-row :gutter="16">
-              <a-col :span="8">
-                <a-form-item label="脂肪目标 (g)">
-                  <a-input-number 
-                    v-model:value="nutritionGoals.fat" 
+                </el-form-item>
+              </el-col>
+            </el-row>
+            <el-row :gutter="16">
+              <el-col :xs="24" :sm="8" :md="8" :lg="8" :xl="8">
+                <el-form-item label="脂肪目标 (g)">
+                  <el-input-number 
+                    v-model="nutritionGoals.fat" 
                     :min="20" 
                     :max="150"
                     style="width: 100%"
                   />
-                </a-form-item>
-              </a-col>
-              <a-col :span="8">
-                <a-form-item label="膳食纤维目标 (g)">
-                  <a-input-number 
-                    v-model:value="nutritionGoals.fiber" 
+                </el-form-item>
+              </el-col>
+              <el-col :xs="24" :sm="8" :md="8" :lg="8" :xl="8">
+                <el-form-item label="膳食纤维目标 (g)">
+                  <el-input-number 
+                    v-model="nutritionGoals.fiber" 
                     :min="10" 
                     :max="50"
                     style="width: 100%"
                   />
-                </a-form-item>
-              </a-col>
-              <a-col :span="8">
-                <a-form-item label="水分目标 (ml)">
-                  <a-input-number 
-                    v-model:value="nutritionGoals.water" 
+                </el-form-item>
+              </el-col>
+              <el-col :xs="24" :sm="8" :md="8" :lg="8" :xl="8">
+                <el-form-item label="水分目标 (ml)">
+                  <el-input-number 
+                    v-model="nutritionGoals.water" 
                     :min="1000" 
                     :max="5000"
                     style="width: 100%"
                   />
-                </a-form-item>
-              </a-col>
-            </a-row>
-            <a-form-item>
-              <a-button type="primary" @click="saveNutritionGoals">
+                </el-form-item>
+              </el-col>
+            </el-row>
+            <el-form-item>
+              <el-button type="primary" @click="saveNutritionGoals" size="large">
                 保存营养目标
-              </a-button>
-            </a-form-item>
-          </a-form>
-        </a-card>
-      </a-col>
-    </a-row>
+              </el-button>
+            </el-form-item>
+          </el-form>
+        </el-card>
+      </el-col>
+    </el-row>
 
     <!-- 编辑资料模态框 -->
-    <a-modal
-      v-model:open="editProfileModalVisible"
+    <el-dialog
+      v-model="editProfileModalVisible"
       title="编辑个人资料"
-      @ok="updateProfile"
-      @cancel="editProfileModalVisible = false"
-      :confirm-loading="updateProfileLoading"
+      width="500px"
+      :close-on-click-modal="false"
     >
-      <a-form :model="editProfileForm" layout="vertical">
-        <a-form-item label="用户名" required>
-          <a-input 
-            v-model:value="editProfileForm.username" 
+      <el-form :model="editProfileForm" label-width="100px" size="large">
+        <el-form-item label="用户名" required>
+          <el-input 
+            v-model="editProfileForm.username" 
             placeholder="请输入用户名"
           />
-        </a-form-item>
-        <a-form-item label="邮箱" required>
-          <a-input 
-            v-model:value="editProfileForm.email" 
+        </el-form-item>
+        <el-form-item label="邮箱" required>
+          <el-input 
+            v-model="editProfileForm.email" 
             placeholder="请输入邮箱"
             type="email"
           />
-        </a-form-item>
-        <a-form-item label="手机号">
-          <a-input 
-            v-model:value="editProfileForm.phone" 
+        </el-form-item>
+        <el-form-item label="手机号">
+          <el-input 
+            v-model="editProfileForm.phone" 
             placeholder="请输入手机号"
           />
-        </a-form-item>
-        <a-form-item label="个人简介">
-          <a-textarea 
-            v-model:value="editProfileForm.bio" 
+        </el-form-item>
+        <el-form-item label="个人简介">
+          <el-input 
+            v-model="editProfileForm.bio" 
             placeholder="请输入个人简介"
+            type="textarea"
             :rows="3"
           />
-        </a-form-item>
-      </a-form>
-    </a-modal>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="editProfileModalVisible = false">取消</el-button>
+          <el-button type="primary" @click="updateProfile" :loading="updateProfileLoading">
+            更新
+          </el-button>
+        </span>
+      </template>
+    </el-dialog>
 
     <!-- 修改密码模态框 -->
-    <a-modal
-      v-model:open="changePasswordModalVisible"
+    <el-dialog
+      v-model="changePasswordModalVisible"
       title="修改密码"
-      @ok="changePassword"
-      @cancel="changePasswordModalVisible = false"
-      :confirm-loading="changePasswordLoading"
+      width="500px"
+      :close-on-click-modal="false"
     >
-      <a-form :model="changePasswordForm" layout="vertical">
-        <a-form-item label="当前密码" required>
-          <a-input-password 
-            v-model:value="changePasswordForm.currentPassword" 
+      <el-form :model="changePasswordForm" label-width="100px" size="large">
+        <el-form-item label="当前密码" required>
+          <el-input 
+            v-model="changePasswordForm.currentPassword" 
             placeholder="请输入当前密码"
+            type="password"
+            show-password
           />
-        </a-form-item>
-        <a-form-item label="新密码" required>
-          <a-input-password 
-            v-model:value="changePasswordForm.newPassword" 
+        </el-form-item>
+        <el-form-item label="新密码" required>
+          <el-input 
+            v-model="changePasswordForm.newPassword" 
             placeholder="请输入新密码"
+            type="password"
+            show-password
           />
-        </a-form-item>
-        <a-form-item label="确认新密码" required>
-          <a-input-password 
-            v-model:value="changePasswordForm.confirmPassword" 
+        </el-form-item>
+        <el-form-item label="确认新密码" required>
+          <el-input 
+            v-model="changePasswordForm.confirmPassword" 
             placeholder="请再次输入新密码"
+            type="password"
+            show-password
           />
-        </a-form-item>
-      </a-form>
-    </a-modal>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="changePasswordModalVisible = false">取消</el-button>
+          <el-button type="primary" @click="changePassword" :loading="changePasswordLoading">
+            修改
+          </el-button>
+        </span>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
-import { message } from 'ant-design-vue'
-import { UserOutlined } from '@ant-design/icons-vue'
+import { ElMessage } from 'element-plus'
+import { User } from '@element-plus/icons-vue'
 
 // 响应式数据
 const editProfileModalVisible = ref(false)
@@ -351,11 +385,11 @@ const changePasswordForm = reactive({
 const beforeAvatarUpload = (file: File) => {
   const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png'
   if (!isJpgOrPng) {
-    message.error('只能上传 JPG/PNG 格式的图片!')
+    ElMessage.error('只能上传 JPG/PNG 格式的图片!')
   }
   const isLt2M = file.size / 1024 / 1024 < 2
   if (!isLt2M) {
-    message.error('图片大小不能超过 2MB!')
+    ElMessage.error('图片大小不能超过 2MB!')
   }
   return isJpgOrPng && isLt2M
 }
@@ -377,7 +411,7 @@ const showChangePasswordModal = () => {
 
 const updateProfile = async () => {
   if (!editProfileForm.username || !editProfileForm.email) {
-    message.error('请填写必填项')
+    ElMessage.error('请填写必填项')
     return
   }
   
@@ -391,10 +425,10 @@ const updateProfile = async () => {
     userInfo.phone = editProfileForm.phone
     userInfo.bio = editProfileForm.bio
     
-    message.success('个人资料已更新')
+    ElMessage.success('个人资料已更新')
     editProfileModalVisible.value = false
   } catch (error) {
-    message.error('更新个人资料失败')
+    ElMessage.error('更新个人资料失败')
   } finally {
     updateProfileLoading.value = false
   }
@@ -402,17 +436,17 @@ const updateProfile = async () => {
 
 const changePassword = async () => {
   if (!changePasswordForm.currentPassword || !changePasswordForm.newPassword || !changePasswordForm.confirmPassword) {
-    message.error('请填写所有密码字段')
+    ElMessage.error('请填写所有密码字段')
     return
   }
   
   if (changePasswordForm.newPassword !== changePasswordForm.confirmPassword) {
-    message.error('两次输入的新密码不一致')
+    ElMessage.error('两次输入的新密码不一致')
     return
   }
   
   if (changePasswordForm.newPassword.length < 6) {
-    message.error('新密码长度不能少于6位')
+    ElMessage.error('新密码长度不能少于6位')
     return
   }
   
@@ -421,7 +455,7 @@ const changePassword = async () => {
     // 这里应该调用API修改密码
     await new Promise(resolve => setTimeout(resolve, 2000))
     
-    message.success('密码修改成功')
+    ElMessage.success('密码修改成功')
     changePasswordModalVisible.value = false
     
     // 清空表单
@@ -429,7 +463,7 @@ const changePassword = async () => {
     changePasswordForm.newPassword = ''
     changePasswordForm.confirmPassword = ''
   } catch (error) {
-    message.error('密码修改失败')
+    ElMessage.error('密码修改失败')
   } finally {
     changePasswordLoading.value = false
   }
@@ -439,9 +473,9 @@ const savePreferences = async () => {
   try {
     // 这里应该调用API保存偏好设置
     await new Promise(resolve => setTimeout(resolve, 1000))
-    message.success('偏好设置已保存')
+    ElMessage.success('偏好设置已保存')
   } catch (error) {
-    message.error('保存偏好设置失败')
+    ElMessage.error('保存偏好设置失败')
   }
 }
 
@@ -449,9 +483,9 @@ const saveNutritionGoals = async () => {
   try {
     // 这里应该调用API保存营养目标
     await new Promise(resolve => setTimeout(resolve, 1000))
-    message.success('营养目标已保存')
+    ElMessage.success('营养目标已保存')
   } catch (error) {
-    message.error('保存营养目标失败')
+    ElMessage.error('保存营养目标失败')
   }
 }
 
@@ -460,28 +494,42 @@ onMounted(() => {
 })
 </script>
 
-<style scoped>
+<style lang="less" scoped>
 .profile-page {
-  padding: 24px;
+  padding: 0;
 }
 
-.profile-card {
-  height: 100%;
+.profile-card,
+.detail-card,
+.preferences-card,
+.nutrition-card {
+  margin-bottom: 24px;
+  border: none;
+  box-shadow: none;
+  
+  .card-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #303133;
+  }
 }
 
 .profile-avatar {
   text-align: center;
   margin-bottom: 24px;
-}
-
-.profile-avatar h2 {
-  margin: 16px 0 8px 0;
-  color: #1890ff;
-}
-
-.user-email {
-  color: #666;
-  margin-bottom: 16px;
+  
+  .profile-name {
+    margin: 16px 0 8px 0;
+    color: #409eff;
+    font-size: 20px;
+    font-weight: 600;
+  }
+  
+  .user-email {
+    color: #606266;
+    margin-bottom: 16px;
+    line-height: 1.6;
+  }
 }
 
 .avatar-upload {
@@ -502,12 +550,12 @@ onMounted(() => {
 
 .avatar-placeholder {
   text-align: center;
-  color: #999;
-}
-
-.avatar-placeholder .anticon {
-  font-size: 24px;
-  margin-bottom: 8px;
+  color: #909399;
+  
+  .el-icon {
+    font-size: 24px;
+    margin-bottom: 8px;
+  }
 }
 
 .profile-stats {
@@ -516,9 +564,57 @@ onMounted(() => {
 
 .profile-actions {
   margin-top: 24px;
+  
+  .el-button {
+    margin-bottom: 8px;
+  }
 }
 
-.profile-actions .ant-btn {
-  margin-bottom: 8px;
+.dialog-footer {
+  text-align: right;
+}
+
+// 移动端适配
+@media (max-width: 768px) {
+  .profile-page {
+    padding: 0;
+    
+    .profile-card,
+    .detail-card,
+    .preferences-card,
+    .nutrition-card {
+      margin: 0 0 16px 0;
+      border-radius: 0;
+    }
+  }
+  
+  .profile-avatar {
+    .profile-name {
+      font-size: 18px;
+    }
+  }
+  
+  .el-form-item {
+    .el-form-item__label {
+      text-align: left;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .profile-card,
+  .detail-card,
+  .preferences-card,
+  .nutrition-card {
+    .card-title {
+      font-size: 16px;
+    }
+  }
+  
+  .profile-avatar {
+    .profile-name {
+      font-size: 16px;
+    }
+  }
 }
 </style>

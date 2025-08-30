@@ -7,12 +7,12 @@
         抱歉，您访问的页面不存在或已被移动。
       </p>
       <div class="error-actions">
-        <a-button type="primary" size="large" @click="goHome">
+        <el-button type="primary" size="large" @click="goHome">
           返回首页
-        </a-button>
-        <a-button size="large" @click="goBack">
+        </el-button>
+        <el-button size="large" @click="goBack">
           返回上页
-        </a-button>
+        </el-button>
       </div>
     </div>
   </div>

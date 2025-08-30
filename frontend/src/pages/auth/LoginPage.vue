@@ -1,82 +1,77 @@
 <template>
-  <div class="auth-page">
-    <div class="auth-container">
-      <div class="auth-card">
-        <div class="auth-header">
-          <h1 class="auth-title">食光家</h1>
-          <p class="auth-subtitle">智能家庭餐饮助手</p>
+  <div class="login-page">
+    <div class="login-container">
+      <div class="login-form">
+        <div class="form-header">
+          <h1 class="title">欢迎回来</h1>
+          <p class="subtitle">登录您的食光家账户</p>
         </div>
-
-        <a-form
-          :model="formData"
-          :rules="rules"
-          @finish="handleSubmit"
-          layout="vertical"
-          class="auth-form"
+        
+        <el-form
+          ref="loginFormRef"
+          :model="loginForm"
+          :rules="loginRules"
+          @submit.prevent="handleLogin"
+          class="login-form-content"
         >
-          <a-form-item label="邮箱" name="email">
-            <a-input
-              v-model:value="formData.email"
+          <el-form-item prop="email">
+            <el-input
+              v-model="loginForm.email"
+              placeholder="邮箱地址"
               size="large"
-              placeholder="请输入邮箱地址"
-              prefix-icon="mail"
+              prefix-icon="Message"
             />
-          </a-form-item>
-
-          <a-form-item label="密码" name="password">
-            <a-input-password
-              v-model:value="formData.password"
+          </el-form-item>
+          
+          <el-form-item prop="password">
+            <el-input
+              v-model="loginForm.password"
+              type="password"
+              placeholder="密码"
               size="large"
-              placeholder="请输入密码"
-              prefix-icon="lock"
+              prefix-icon="Lock"
+              show-password
             />
-          </a-form-item>
-
-          <a-form-item>
-            <a-button
+          </el-form-item>
+          
+          <el-form-item>
+            <div class="form-options">
+              <el-checkbox v-model="loginForm.rememberMe">
+                记住我
+              </el-checkbox>
+              <el-link type="primary" @click="forgotPassword">
+                忘记密码？
+              </el-link>
+            </div>
+          </el-form-item>
+          
+          <el-form-item>
+            <el-button
               type="primary"
-              html-type="submit"
               size="large"
-              :loading="isLoading"
-              class="auth-button"
-              block
+              :loading="loading"
+              @click="handleLogin"
+              class="login-button"
             >
               登录
-            </a-button>
-          </a-form-item>
-        </a-form>
-
-        <div class="auth-footer">
-          <p>
-            还没有账号？
-            <router-link to="/register" class="auth-link">立即注册</router-link>
+            </el-button>
+          </el-form-item>
+        </el-form>
+        
+        <div class="form-footer">
+          <p class="signup-text">
+            还没有账户？
+            <el-link type="primary" @click="goToRegister">
+              立即注册
+            </el-link>
           </p>
         </div>
-
-        <div v-if="error" class="error-message">
-          {{ error }}
-        </div>
-
-        <div class="feature-display">
-          <h3>核心功能</h3>
-          <div class="feature-grid">
-            <div class="feature-item">
-              <a-icon type="camera" />
-              <span>AI食材识别</span>
-            </div>
-            <div class="feature-item">
-              <a-icon type="book" />
-              <span>智能菜谱生成</span>
-            </div>
-            <div class="feature-item">
-              <a-icon type="play-circle" />
-              <span>视频烹饪指导</span>
-            </div>
-            <div class="feature-item">
-              <a-icon type="heart" />
-              <span>营养健康管理</span>
-            </div>
-          </div>
+      </div>
+      
+      <div class="login-image">
+        <div class="image-content">
+          <h2>食光家</h2>
+          <p>让烹饪更智能，让生活更美好</p>
         </div>
       </div>
     </div>
@@ -86,25 +81,26 @@
 <script setup lang="ts">
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
-import { message } from 'ant-design-vue'
+import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
+import { Message, Lock } from '@element-plus/icons-vue'
 import { useAuthStore } from '@/stores/authStore'
-import type { LoginRequest } from '@/types/auth'
 
 const router = useRouter()
 const authStore = useAuthStore()
 
-const formData = reactive<LoginRequest>({
+const loginFormRef = ref<FormInstance>()
+const loading = ref(false)
+
+const loginForm = reactive({
   email: '',
-  password: ''
+  password: '',
+  rememberMe: false
 })
 
-const isLoading = ref(false)
-const error = ref('')
-
-const rules = {
+const loginRules: FormRules = {
   email: [
     { required: true, message: '请输入邮箱地址', trigger: 'blur' },
-    { type: 'email', message: '请输入有效的邮箱地址', trigger: 'blur' }
+    { type: 'email', message: '请输入正确的邮箱格式', trigger: 'blur' }
   ],
   password: [
     { required: true, message: '请输入密码', trigger: 'blur' },
@@ -112,24 +108,38 @@ const rules = {
   ]
 }
 
-const handleSubmit = async () => {
+const handleLogin = async () => {
+  if (!loginFormRef.value) return
+  
   try {
-    isLoading.value = true
-    error.value = ''
+    await loginFormRef.value.validate()
+    loading.value = true
     
-    await authStore.login(formData)
-    message.success('登录成功！')
+    await authStore.login(loginForm.email, loginForm.password)
+    ElMessage.success('登录成功！')
     router.push('/dashboard')
-  } catch (err: any) {
-    error.value = err.message || '登录失败，请检查邮箱和密码'
+  } catch (error: any) {
+    if (error.message) {
+      ElMessage.error(error.message)
+    } else {
+      ElMessage.error('登录失败，请检查邮箱和密码')
+    }
   } finally {
-    isLoading.value = false
+    loading.value = false
   }
+}
+
+const forgotPassword = () => {
+  ElMessage.info('忘记密码功能开发中...')
+}
+
+const goToRegister = () => {
+  router.push('/register')
 }
 </script>
 
-<style scoped>
-.auth-page {
+<style lang="less" scoped>
+.login-page {
   min-height: 100vh;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   display: flex;
@@ -138,114 +148,149 @@ const handleSubmit = async () => {
   padding: 20px;
 }
 
-.auth-container {
-  width: 100%;
-  max-width: 480px;
-}
-
-.auth-card {
+.login-container {
   background: white;
-  border-radius: 16px;
-  padding: 40px;
+  border-radius: 20px;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  width: 100%;
+  max-width: 1000px;
+  display: flex;
+  min-height: 600px;
 }
 
-.auth-header {
+.login-form {
+  flex: 1;
+  padding: 60px 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.form-header {
   text-align: center;
-  margin-bottom: 32px;
+  margin-bottom: 40px;
+  
+  .title {
+    font-size: 32px;
+    font-weight: 700;
+    color: #333;
+    margin: 0 0 12px 0;
+  }
+  
+  .subtitle {
+    font-size: 16px;
+    color: #666;
+    margin: 0;
+  }
 }
 
-.auth-title {
-  font-size: 32px;
-  font-weight: bold;
-  color: #1890ff;
-  margin: 0 0 8px 0;
+.login-form-content {
+  .el-form-item {
+    margin-bottom: 24px;
+  }
 }
 
-.auth-subtitle {
-  font-size: 16px;
-  color: #666;
-  margin: 0;
+.form-options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
 }
 
-.auth-form {
-  margin-bottom: 24px;
-}
-
-.auth-button {
+.login-button {
+  width: 100%;
   height: 48px;
   font-size: 16px;
-  font-weight: 500;
+  font-weight: 600;
+  border-radius: 24px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  border: none;
+  
+  &:hover {
+    background: linear-gradient(135deg, #5a6fd8, #6a4190);
+  }
 }
 
-.auth-footer {
+.form-footer {
   text-align: center;
-  margin-bottom: 24px;
+  margin-top: 32px;
+  
+  .signup-text {
+    color: #666;
+    margin: 0;
+    
+    .el-link {
+      font-weight: 600;
+    }
+  }
 }
 
-.auth-link {
-  color: #1890ff;
-  text-decoration: none;
-}
-
-.auth-link:hover {
-  text-decoration: underline;
-}
-
-.error-message {
-  background: #fff2f0;
-  border: 1px solid #ffccc7;
-  color: #ff4d4f;
-  padding: 12px;
-  border-radius: 6px;
-  margin-bottom: 24px;
-  text-align: center;
-}
-
-.feature-display {
-  text-align: center;
-  padding-top: 24px;
-  border-top: 1px solid #f0f0f0;
-}
-
-.feature-display h3 {
-  color: #333;
-  margin-bottom: 16px;
-}
-
-.feature-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
-}
-
-.feature-item {
+.login-image {
+  flex: 1;
+  background: linear-gradient(135deg, #667eea, #764ba2);
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 12px;
-  background: #f8f9fa;
-  border-radius: 8px;
-  color: #666;
+  color: white;
+  text-align: center;
+  
+  .image-content {
+    h2 {
+      font-size: 48px;
+      font-weight: 700;
+      margin: 0 0 20px 0;
+    }
+    
+    p {
+      font-size: 18px;
+      margin: 0;
+      opacity: 0.9;
+    }
+  }
 }
 
-.feature-item .anticon {
-  font-size: 18px;
-  color: #1890ff;
+// 移动端适配
+@media (max-width: 768px) {
+  .login-container {
+    flex-direction: column;
+    min-height: auto;
+  }
+  
+  .login-form {
+    padding: 40px 24px;
+  }
+  
+  .login-image {
+    padding: 40px 24px;
+    
+    .image-content {
+      h2 {
+        font-size: 32px;
+      }
+      
+      p {
+        font-size: 16px;
+      }
+    }
+  }
+  
+  .form-header .title {
+    font-size: 28px;
+  }
 }
 
 @media (max-width: 480px) {
-  .auth-card {
-    padding: 24px;
+  .login-page {
+    padding: 16px;
   }
   
-  .auth-title {
-    font-size: 28px;
+  .login-form {
+    padding: 32px 20px;
   }
   
-  .feature-grid {
-    grid-template-columns: 1fr;
+  .form-header .title {
+    font-size: 24px;
   }
 }
 </style>
