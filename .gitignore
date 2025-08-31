@@ -16,6 +16,12 @@ build/
 .env.test.local
 .env.production.local
 
+# 后端环境配置文件
+backend/.env.development
+backend/.env.production
+backend/.env.test
+backend/.env.local
+
 # 日志
 logs/
 *.log
@@ -75,6 +81,7 @@ Thumbs.db
 # 上传文件
 uploads/
 public/uploads/
+backend/uploads/
 
 # 数据库
 *.sqlite
