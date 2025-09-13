@@ -1,645 +1,403 @@
 <template>
-  <div class="dashboard-page">
-    <!-- 欢迎区域 -->
-    <el-row :gutter="24" class="welcome-section">
-      <el-col :xs="24" :sm="24" :md="16" :lg="16" :xl="16">
-        <el-card class="welcome-card" shadow="hover">
-          <div class="welcome-content">
-            <div class="welcome-text">
-              <h1>欢迎回来，{{ user?.username || '美食家' }}！</h1>
-              <p>今天想要烹饪什么美食呢？</p>
-            </div>
-            <div class="welcome-actions">
-              <el-button type="primary" size="large" @click="goToRecipes">
-                <el-icon><Document /></el-icon>
-                浏览菜谱
-              </el-button>
-              <el-button size="large" @click="goToIngredients">
-                <el-icon><Apple /></el-icon>
-                管理食材
-              </el-button>
-            </div>
+  <div class="dashboard">
+    <div class="welcome-section">
+      <h1>欢迎回来，{{ user?.nickname || user?.username }}！</h1>
+      <p>今天想做什么美味呢？</p>
+    </div>
+    
+    <div class="stats-grid">
+      <el-card class="stat-card">
+        <div class="stat-content">
+          <div class="stat-icon recipes">
+            <el-icon><Document /></el-icon>
           </div>
-        </el-card>
-      </el-col>
+          <div class="stat-info">
+            <h3>{{ recipesCount }}</h3>
+            <p>菜谱总数</p>
+          </div>
+        </div>
+      </el-card>
       
-      <el-col :xs="24" :sm="24" :md="8" :lg="8" :xl="8">
-        <el-card class="quick-stats-card" shadow="hover">
-          <template #header>
-            <div class="card-header">
-              <span>今日概览</span>
-              <el-button type="text" @click="refreshStats">
-                <el-icon><Refresh /></el-icon>
-              </el-button>
-            </div>
-          </template>
-          <div class="stats-content">
-            <div class="stat-item">
-              <div class="stat-value">{{ todayStats.cookingCount }}</div>
-              <div class="stat-label">今日烹饪</div>
-            </div>
-            <div class="stat-item">
-              <div class="stat-value">{{ todayStats.calories }}</div>
-              <div class="stat-label">摄入热量</div>
-            </div>
-            <div class="stat-item">
-              <div class="stat-value">{{ todayStats.recipes }}</div>
-              <div class="stat-label">收藏菜谱</div>
+      <el-card class="stat-card">
+        <div class="stat-content">
+          <div class="stat-icon ingredients">
+            <el-icon><Apple /></el-icon>
+          </div>
+          <div class="stat-info">
+            <h3>{{ ingredientsCount }}</h3>
+            <p>食材种类</p>
+          </div>
+        </div>
+      </el-card>
+      
+      <el-card class="stat-card">
+        <div class="stat-content">
+          <div class="stat-icon families">
+            <el-icon><UserFilled /></el-icon>
+          </div>
+          <div class="stat-info">
+            <h3>{{ familiesCount }}</h3>
+            <p>家庭数量</p>
+          </div>
+        </div>
+      </el-card>
+    </div>
+    
+    <div class="content-grid">
+      <!-- 精选菜谱 -->
+      <el-card class="content-card">
+        <template #header>
+          <div class="card-header">
+            <h3>精选菜谱</h3>
+            <router-link to="/recipes" class="more-link">查看更多</router-link>
+          </div>
+        </template>
+        
+        <div class="recipe-list">
+          <div
+            v-for="recipe in featuredRecipes"
+            :key="recipe.id"
+            class="recipe-item"
+            @click="viewRecipe(recipe)"
+          >
+            <img :src="recipe.image" :alt="recipe.title" class="recipe-image" />
+            <div class="recipe-info">
+              <h4>{{ recipe.title }}</h4>
+              <p>{{ recipe.description }}</p>
+              <div class="recipe-meta">
+                <el-tag :type="getDifficultyType(recipe.difficulty)" size="small">
+                  {{ getDifficultyText(recipe.difficulty) }}
+                </el-tag>
+                <span class="time">{{ recipe.prepTime + recipe.cookTime }}分钟</span>
+                <el-rate v-model="recipe.rating" disabled show-score />
+              </div>
             </div>
           </div>
-        </el-card>
-      </el-col>
-    </el-row>
-
+        </div>
+      </el-card>
+      
+      <!-- 最近菜谱 -->
+      <el-card class="content-card">
+        <template #header>
+          <div class="card-header">
+            <h3>最近添加</h3>
+            <router-link to="/recipes" class="more-link">查看更多</router-link>
+          </div>
+        </template>
+        
+        <div class="recipe-list">
+          <div
+            v-for="recipe in recentRecipes"
+            :key="recipe.id"
+            class="recipe-item"
+            @click="viewRecipe(recipe)"
+          >
+            <img :src="recipe.image" :alt="recipe.title" class="recipe-image" />
+            <div class="recipe-info">
+              <h4>{{ recipe.title }}</h4>
+              <p>{{ recipe.description }}</p>
+              <div class="recipe-meta">
+                <el-tag :type="getDifficultyType(recipe.difficulty)" size="small">
+                  {{ getDifficultyText(recipe.difficulty) }}
+                </el-tag>
+                <span class="time">{{ recipe.prepTime + recipe.cookTime }}分钟</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </el-card>
+    </div>
+    
     <!-- 快速操作 -->
-    <el-row :gutter="24" class="quick-actions-section">
-      <el-col :xs="24" :sm="12" :md="6" :lg="6" :xl="6">
-        <el-card class="action-card" shadow="hover" @click="goToCooking">
-          <div class="action-content">
-            <el-icon class="action-icon cooking"><VideoPlay /></el-icon>
-            <h3>开始烹饪</h3>
-            <p>选择菜谱，开始你的美食之旅</p>
-          </div>
-        </el-card>
-      </el-col>
+    <el-card class="quick-actions">
+      <template #header>
+        <h3>快速操作</h3>
+      </template>
       
-      <el-col :xs="24" :sm="12" :md="6" :lg="6" :xl="6">
-        <el-card class="action-card" shadow="hover" @click="goToNutrition">
-          <div class="action-content">
-            <el-icon class="action-icon nutrition"><Heart /></el-icon>
-            <h3>营养分析</h3>
-            <p>了解你的营养摄入情况</p>
-          </div>
-        </el-card>
-      </el-col>
-      
-      <el-col :xs="24" :sm="12" :md="6" :lg="6" :xl="6">
-        <el-card class="action-card" shadow="hover" @click="goToFamily">
-          <div class="action-content">
-            <el-icon class="action-icon family"><UserFilled /></el-icon>
-            <h3>家庭管理</h3>
-            <p>管理家庭成员和饮食偏好</p>
-          </div>
-        </el-card>
-      </el-col>
-      
-      <el-col :xs="24" :sm="12" :md="6" :lg="6" :xl="6">
-        <el-card class="action-card" shadow="hover" @click="goToProfile">
-          <div class="action-content">
-            <el-icon class="action-icon profile"><User /></el-icon>
-            <h3>个人设置</h3>
-            <p>个性化你的烹饪体验</p>
-          </div>
-        </el-card>
-      </el-col>
-    </el-row>
-
-    <!-- 最近活动 -->
-    <el-row :gutter="24" class="recent-activities-section">
-      <el-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
-        <el-card class="activities-card" shadow="hover">
-          <template #header>
-            <div class="card-header">
-              <span>最近活动</span>
-              <el-button type="text" @click="viewAllActivities">
-                查看全部
-              </el-button>
-            </div>
-          </template>
-          <div class="activities-list">
-            <div 
-              v-for="activity in recentActivities" 
-              :key="activity.id"
-              class="activity-item"
-            >
-              <el-avatar :src="activity.userAvatar" :alt="activity.username">
-                {{ activity.username?.charAt(0)?.toUpperCase() }}
-              </el-avatar>
-              <div class="activity-content">
-                <div class="activity-text">{{ activity.description }}</div>
-                <div class="activity-time">{{ activity.time }}</div>
-              </div>
-            </div>
-          </div>
-        </el-card>
-      </el-col>
-      
-      <el-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
-        <el-card class="recommendations-card" shadow="hover">
-          <template #header>
-            <div class="card-header">
-              <span>推荐菜谱</span>
-              <el-button type="text" @click="viewAllRecipes">
-                更多推荐
-              </el-button>
-            </div>
-          </template>
-          <div class="recommendations-list">
-            <div 
-              v-for="recipe in recommendedRecipes" 
-              :key="recipe.id"
-              class="recipe-item"
-              @click="viewRecipe(recipe.id)"
-            >
-              <el-image 
-                :src="recipe.image" 
-                :alt="recipe.title"
-                class="recipe-image"
-                fit="cover"
-              />
-              <div class="recipe-info">
-                <h4>{{ recipe.title }}</h4>
-                <p>{{ recipe.description }}</p>
-                <div class="recipe-meta">
-                  <el-rate 
-                    v-model="recipe.rating" 
-                    disabled 
-                    show-score 
-                    text-color="#ff9900"
-                    score-template="{value}"
-                  />
-                  <span class="cook-time">{{ recipe.cookTime }}分钟</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </el-card>
-      </el-col>
-    </el-row>
-
-    <!-- 营养提醒 -->
-    <el-row :gutter="24" class="nutrition-reminder-section">
-      <el-col :span="24">
-        <el-alert
-          v-if="nutritionReminder.show"
-          :title="nutritionReminder.title"
-          :description="nutritionReminder.description"
-          type="info"
-          show-icon
-          :closable="false"
-          class="nutrition-alert"
-        >
-          <template #default>
-            <div class="reminder-actions">
-              <el-button type="primary" size="small" @click="goToNutrition">
-                查看详情
-              </el-button>
-              <el-button size="small" @click="dismissReminder">
-                稍后提醒
-              </el-button>
-            </div>
-          </template>
-        </el-alert>
-      </el-col>
-    </el-row>
+      <div class="action-grid">
+        <el-button type="primary" size="large" @click="$router.push('/recipes/create')">
+          <el-icon><Plus /></el-icon>
+          创建菜谱
+        </el-button>
+        
+        <el-button type="success" size="large" @click="$router.push('/ingredients')">
+          <el-icon><Apple /></el-icon>
+          管理食材
+        </el-button>
+        
+        <el-button type="warning" size="large" @click="$router.push('/cooking')">
+          <el-icon><VideoPlay /></el-icon>
+          开始烹饪
+        </el-button>
+        
+        <el-button type="info" size="large" @click="$router.push('/family')">
+          <el-icon><UserFilled /></el-icon>
+          家庭管理
+        </el-button>
+      </div>
+    </el-card>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { useAuthStore } from '@/stores/authStore'
-import { ElMessage } from 'element-plus'
+import { useAppStore } from '@/stores/app'
 import {
   Document,
   Apple,
-  VideoPlay,
-  Heart,
   UserFilled,
-  User,
-  Refresh
+  Plus,
+  VideoPlay
 } from '@element-plus/icons-vue'
+import type { Recipe } from '@/types'
 
 const router = useRouter()
-const authStore = useAuthStore()
+const appStore = useAppStore()
 
-const user = computed(() => authStore.user)
+const user = computed(() => appStore.user)
+const recipesCount = computed(() => appStore.recipesCount)
+const ingredientsCount = computed(() => appStore.ingredientsCount)
+const familiesCount = computed(() => appStore.familiesCount)
+const featuredRecipes = computed(() => appStore.featuredRecipes)
+const recentRecipes = computed(() => appStore.recentRecipes)
 
-// 今日统计
-const todayStats = ref({
-  cookingCount: 3,
-  calories: 1850,
-  recipes: 12
-})
-
-// 最近活动
-const recentActivities = ref([
-  {
-    id: 1,
-    username: '张三',
-    userAvatar: '/avatar1.jpg',
-    description: '完成了红烧肉的烹饪',
-    time: '2小时前'
-  },
-  {
-    id: 2,
-    username: '李四',
-    userAvatar: '/avatar2.jpg',
-    description: '创建了新的菜谱',
-    time: '4小时前'
-  },
-  {
-    id: 3,
-    username: '王五',
-    userAvatar: '/avatar3.jpg',
-    description: '加入了家庭',
-    time: '1天前'
+const getDifficultyType = (difficulty: string) => {
+  switch (difficulty) {
+    case 'easy': return 'success'
+    case 'medium': return 'warning'
+    case 'hard': return 'danger'
+    default: return 'info'
   }
-])
+}
 
-// 推荐菜谱
-const recommendedRecipes = ref([
-  {
-    id: 1,
-    title: '红烧肉',
-    description: '经典美味的红烧肉，肥而不腻',
-    image: '/recipe1.jpg',
-    rating: 4.5,
-    cookTime: 45
-  },
-  {
-    id: 2,
-    title: '清蒸鲈鱼',
-    description: '鲜嫩可口的清蒸鲈鱼',
-    image: '/recipe2.jpg',
-    rating: 4.8,
-    cookTime: 30
+const getDifficultyText = (difficulty: string) => {
+  switch (difficulty) {
+    case 'easy': return '简单'
+    case 'medium': return '中等'
+    case 'hard': return '困难'
+    default: return '未知'
   }
-])
-
-// 营养提醒
-const nutritionReminder = ref({
-  show: true,
-  title: '营养提醒',
-  description: '今日蛋白质摄入不足，建议增加肉类或豆制品摄入'
-})
-
-// 方法
-const goToRecipes = () => {
-  router.push('/recipes')
 }
 
-const goToIngredients = () => {
-  router.push('/ingredients')
+const viewRecipe = (recipe: Recipe) => {
+  appStore.setCurrentRecipe(recipe)
+  router.push(`/recipes/${recipe.id}`)
 }
-
-const goToCooking = () => {
-  router.push('/cooking')
-}
-
-const goToNutrition = () => {
-  router.push('/nutrition')
-}
-
-const goToFamily = () => {
-  router.push('/family')
-}
-
-const goToProfile = () => {
-  router.push('/profile')
-}
-
-const refreshStats = () => {
-  ElMessage.success('统计数据已刷新')
-}
-
-const viewAllActivities = () => {
-  ElMessage.info('查看全部活动功能开发中...')
-}
-
-const viewAllRecipes = () => {
-  router.push('/recipes')
-}
-
-const viewRecipe = (id: string) => {
-  router.push(`/recipes/${id}`)
-}
-
-const dismissReminder = () => {
-  nutritionReminder.value.show = false
-  ElMessage.info('已设置稍后提醒')
-}
-
-onMounted(() => {
-  // 初始化数据
-})
 </script>
 
-<style lang="less" scoped>
-.dashboard-page {
-  padding: 0;
+<style scoped>
+.dashboard {
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .welcome-section {
-  margin-bottom: 24px;
+  text-align: center;
+  margin-bottom: 32px;
 }
 
-.welcome-card {
-  height: 200px;
-  
-  .welcome-content {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    height: 100%;
-  }
-  
-  .welcome-text {
-    h1 {
-      margin: 0 0 8px 0;
-      color: #1890ff;
-      font-size: 24px;
-    }
-    
-    p {
-      margin: 0;
-      color: #666;
-      font-size: 16px;
-    }
-  }
-  
-  .welcome-actions {
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
-  }
+.welcome-section h1 {
+  font-size: 32px;
+  color: #333;
+  margin: 0 0 8px 0;
+  font-weight: 600;
 }
 
-.quick-stats-card {
-  height: 200px;
-  
-  .card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  
-  .stats-content {
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    height: 120px;
-  }
-  
-  .stat-item {
-    text-align: center;
-    
-    .stat-value {
-      font-size: 32px;
-      font-weight: bold;
-      color: #1890ff;
-      margin-bottom: 8px;
-    }
-    
-    .stat-label {
-      color: #666;
-      font-size: 14px;
-    }
-  }
+.welcome-section p {
+  font-size: 16px;
+  color: #666;
+  margin: 0;
 }
 
-.quick-actions-section {
-  margin-bottom: 24px;
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 24px;
+  margin-bottom: 32px;
 }
 
-.action-card {
+.stat-card {
+  border: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.stat-content {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.stat-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  color: white;
+}
+
+.stat-icon.recipes {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.stat-icon.ingredients {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.stat-icon.families {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.stat-info h3 {
+  font-size: 28px;
+  color: #333;
+  margin: 0 0 4px 0;
+  font-weight: 600;
+}
+
+.stat-info p {
+  color: #666;
+  margin: 0;
+  font-size: 14px;
+}
+
+.content-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.content-card {
+  border: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card-header h3 {
+  margin: 0;
+  color: #333;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.more-link {
+  color: #409EFF;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.more-link:hover {
+  text-decoration: underline;
+}
+
+.recipe-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.recipe-item {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 8px;
   cursor: pointer;
-  transition: all 0.3s;
-  
-  &:hover {
-    transform: translateY(-4px);
-  }
-  
-  .action-content {
-    text-align: center;
-    padding: 20px;
-    
-    .action-icon {
-      font-size: 48px;
-      margin-bottom: 16px;
-      
-      &.cooking {
-        color: #ff4d4f;
-      }
-      
-      &.nutrition {
-        color: #52c41a;
-      }
-      
-      &.family {
-        color: #1890ff;
-      }
-      
-      &.profile {
-        color: #722ed1;
-      }
-    }
-    
-    h3 {
-      margin: 0 0 8px 0;
-      color: #333;
-      font-size: 18px;
-    }
-    
-    p {
-      margin: 0;
-      color: #666;
-      font-size: 14px;
-      line-height: 1.5;
-    }
-  }
+  transition: background-color 0.2s;
 }
 
-.recent-activities-section {
-  margin-bottom: 24px;
+.recipe-item:hover {
+  background: #f5f5f5;
 }
 
-.activities-card,
-.recommendations-card {
-  .card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
+.recipe-image {
+  width: 80px;
+  height: 80px;
+  border-radius: 8px;
+  object-fit: cover;
 }
 
-.activities-list {
-  .activity-item {
-    display: flex;
-    align-items: center;
-    padding: 12px 0;
-    border-bottom: 1px solid #f0f0f0;
-    
-    &:last-child {
-      border-bottom: none;
-    }
-    
-    .activity-content {
-      margin-left: 12px;
-      flex: 1;
-      
-      .activity-text {
-        color: #333;
-        margin-bottom: 4px;
-      }
-      
-      .activity-time {
-        color: #999;
-        font-size: 12px;
-      }
-    }
-  }
+.recipe-info {
+  flex: 1;
 }
 
-.recommendations-list {
-  .recipe-item {
-    display: flex;
-    padding: 16px 0;
-    border-bottom: 1px solid #f0f0f0;
-    cursor: pointer;
-    transition: background-color 0.3s;
-    
-    &:last-child {
-      border-bottom: none;
-    }
-    
-    &:hover {
-      background-color: #fafafa;
-    }
-    
-    .recipe-image {
-      width: 80px;
-      height: 60px;
-      border-radius: 6px;
-      margin-right: 16px;
-    }
-    
-    .recipe-info {
-      flex: 1;
-      
-      h4 {
-        margin: 0 0 8px 0;
-        color: #333;
-        font-size: 16px;
-      }
-      
-      p {
-        margin: 0 0 8px 0;
-        color: #666;
-        font-size: 14px;
-        line-height: 1.4;
-      }
-      
-      .recipe-meta {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        
-        .cook-time {
-          color: #999;
-          font-size: 12px;
-        }
-      }
-    }
-  }
+.recipe-info h4 {
+  margin: 0 0 4px 0;
+  color: #333;
+  font-size: 16px;
+  font-weight: 500;
 }
 
-.nutrition-reminder-section {
-  margin-bottom: 24px;
+.recipe-info p {
+  margin: 0 0 8px 0;
+  color: #666;
+  font-size: 14px;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
-.nutrition-alert {
-  .reminder-actions {
-    margin-top: 12px;
-    
-    .el-button {
-      margin-right: 8px;
-    }
-  }
+.recipe-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
-/* 移动端适配 */
+.time {
+  color: #999;
+  font-size: 12px;
+}
+
+.quick-actions {
+  border: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.quick-actions h3 {
+  margin: 0;
+  color: #333;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.action-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.action-grid .el-button {
+  height: 48px;
+  font-size: 16px;
+  font-weight: 500;
+}
+
 @media (max-width: 768px) {
-  .dashboard-page {
-    padding: 0;
+  .content-grid {
+    grid-template-columns: 1fr;
   }
   
-  .welcome-card,
-  .quick-stats-card {
-    height: auto;
-    margin-bottom: 16px;
+  .stats-grid {
+    grid-template-columns: 1fr;
   }
   
-  .welcome-content {
-    padding: 20px 0;
+  .action-grid {
+    grid-template-columns: 1fr;
   }
   
-  .welcome-actions {
-    justify-content: center;
-    
-    .el-button {
-      width: 100%;
-      margin-bottom: 8px;
-    }
-  }
-  
-  .stats-content {
-    flex-direction: column;
-    gap: 20px;
-    height: auto !important;
-  }
-  
-  .action-card {
-    margin-bottom: 16px;
-    
-    .action-content {
-      padding: 16px;
-      
-      .action-icon {
-        font-size: 36px;
-      }
-      
-      h3 {
-        font-size: 16px;
-      }
-      
-      p {
-        font-size: 13px;
-      }
-    }
-  }
-  
-  .recipe-item {
-    flex-direction: column;
-    
-    .recipe-image {
-      width: 100%;
-      height: 120px;
-      margin-right: 0;
-      margin-bottom: 12px;
-    }
-  }
-}
-
-@media (max-width: 480px) {
-  .welcome-text h1 {
-    font-size: 20px;
-  }
-  
-  .welcome-text p {
-    font-size: 14px;
-  }
-  
-  .action-content {
-    padding: 12px;
-    
-    .action-icon {
-      font-size: 32px;
-    }
-  }
-  
-  .stat-value {
-    font-size: 24px !important;
+  .welcome-section h1 {
+    font-size: 24px;
   }
 }
 </style>

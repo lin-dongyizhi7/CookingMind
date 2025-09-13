@@ -1,333 +1,248 @@
 <template>
   <div class="recipes-page">
-    <AppHeader />
-    <AppSider />
-    
-    <div class="main-content">
-      <div class="page-header">
-        <h1>食谱管理</h1>
-        <p>发现和创建美味食谱，AI智能推荐</p>
-      </div>
-      
-      <div class="actions-bar">
-        <el-space>
-          <el-button type="primary" @click="showGenerateModal = true">
-            <el-icon><Robot /></el-icon>
-            AI 生成食谱
-          </el-button>
-          <el-button @click="showAddModal = true">
-            <el-icon><Plus /></el-icon>
-            添加食谱
-          </el-button>
-        </el-space>
-      </div>
-      
-      <div class="recipes-grid">
-        <el-card
-          v-for="recipe in recipes"
-          :key="recipe.id"
-          class="recipe-card"
-          @click="viewRecipe(recipe)"
-        >
-          <el-image
-            :src="recipe.image || '/placeholder-recipe.jpg'"
-            fit="cover"
-            class="recipe-image"
-          />
-          
-          <div class="recipe-content">
-            <h3 class="recipe-title">{{ recipe.title }}</h3>
-            <p class="recipe-description">{{ recipe.description }}</p>
-            
-            <div class="recipe-meta">
-              <el-avatar :src="recipe.author?.avatar" :size="24">
-                {{ recipe.author?.name?.charAt(0) }}
-              </el-avatar>
-              <span class="author-name">{{ recipe.author?.name }}</span>
-            </div>
-            
-            <div class="recipe-tags">
-              <el-tag :type="getDifficultyType(recipe.difficulty)" size="small">
-                {{ recipe.difficulty }}
-              </el-tag>
-              <el-tag type="info" size="small">{{ recipe.cuisine }}</el-tag>
-            </div>
-          </div>
-        </el-card>
-      </div>
+    <div class="page-header">
+      <h1>菜谱管理</h1>
+      <el-button type="primary" @click="showCreateDialog = true">
+        <el-icon><Plus /></el-icon>
+        创建菜谱
+      </el-button>
     </div>
     
-    <!-- AI生成食谱模态框 -->
-    <el-dialog
-      v-model="showGenerateModal"
-      title="AI 生成食谱"
-      width="600px"
-    >
-      <el-form :model="generateForm" label-width="100px">
-        <el-form-item label="主要食材">
-          <el-select
-            v-model="generateForm.ingredients"
-            multiple
-            placeholder="选择主要食材"
-            style="width: 100%"
-          >
-            <el-option value="tomato" label="番茄" />
-            <el-option value="egg" label="鸡蛋" />
-            <el-option value="chicken" label="鸡肉" />
-            <el-option value="beef" label="牛肉" />
-            <el-option value="fish" label="鱼" />
-            <el-option value="pork" label="猪肉" />
-            <el-option value="carrot" label="胡萝卜" />
-            <el-option value="onion" label="洋葱" />
-          </el-select>
-        </el-form-item>
-        
-        <el-form-item label="菜系">
-          <el-select v-model="generateForm.cuisine" placeholder="选择菜系" style="width: 100%">
-            <el-option value="chinese" label="中餐" />
-            <el-option value="western" label="西餐" />
-            <el-option value="japanese" label="日料" />
-            <el-option value="korean" label="韩料" />
-            <el-option value="thai" label="泰式" />
-            <el-option value="italian" label="意式" />
-          </el-select>
-        </el-form-item>
-        
-        <el-form-item label="口味偏好">
-          <el-select v-model="generateForm.taste" placeholder="选择口味偏好" style="width: 100%">
-            <el-option value="spicy" label="辣味" />
-            <el-option value="sweet" label="甜味" />
-            <el-option value="sour" label="酸味" />
-            <el-option value="umami" label="鲜味" />
-            <el-option value="light" label="清淡" />
-          </el-select>
-        </el-form-item>
-        
-        <el-form-item label="烹饪时间">
-          <el-select v-model="generateForm.cookingTime" placeholder="选择烹饪时间" style="width: 100%">
-            <el-option value="quick" label="快速 (15分钟内)" />
-            <el-option value="medium" label="中等 (15-30分钟)" />
-            <el-option value="slow" label="慢炖 (30分钟以上)" />
-          </el-select>
-        </el-form-item>
-        
-        <el-form-item label="特殊要求">
-          <el-input
-            v-model="generateForm.requirements"
-            type="textarea"
-            :rows="3"
-            placeholder="例如：低脂、无麸质、素食等"
-          />
-        </el-form-item>
-      </el-form>
-      
-      <template #footer>
-        <el-space>
-          <el-button @click="showGenerateModal = false">取消</el-button>
-          <el-button type="primary" @click="handleGenerateRecipe">生成食谱</el-button>
-        </el-space>
-      </template>
-    </el-dialog>
+    <div class="filters">
+      <el-input
+        v-model="searchQuery"
+        placeholder="搜索菜谱..."
+        :prefix-icon="Search"
+        class="search-input"
+        @input="handleSearch"
+      />
+      <el-select v-model="difficultyFilter" placeholder="难度" clearable>
+        <el-option label="简单" value="easy" />
+        <el-option label="中等" value="medium" />
+        <el-option label="困难" value="hard" />
+      </el-select>
+    </div>
     
-    <!-- 添加食谱模态框 -->
+    <div class="recipes-grid">
+      <el-card
+        v-for="recipe in filteredRecipes"
+        :key="recipe.id"
+        class="recipe-card"
+        @click="viewRecipe(recipe)"
+      >
+        <img :src="recipe.image" :alt="recipe.title" class="recipe-image" />
+        <div class="recipe-content">
+          <h3>{{ recipe.title }}</h3>
+          <p>{{ recipe.description }}</p>
+          <div class="recipe-meta">
+            <el-tag :type="getDifficultyType(recipe.difficulty)" size="small">
+              {{ getDifficultyText(recipe.difficulty) }}
+            </el-tag>
+            <span class="time">{{ recipe.prepTime + recipe.cookTime }}分钟</span>
+            <el-rate v-model="recipe.rating" disabled show-score />
+          </div>
+        </div>
+      </el-card>
+    </div>
+    
+    <!-- 创建菜谱对话框 -->
     <el-dialog
-      v-model="showAddModal"
-      title="添加食谱"
+      v-model="showCreateDialog"
+      title="创建菜谱"
       width="600px"
+      @close="resetForm"
     >
-      <el-form :model="newRecipe" label-width="100px">
-        <el-form-item label="食谱名称">
-          <el-input v-model="newRecipe.title" placeholder="请输入食谱名称" />
+      <el-form ref="formRef" :model="form" :rules="rules" label-width="80px">
+        <el-form-item label="标题" prop="title">
+          <el-input v-model="form.title" placeholder="请输入菜谱标题" />
         </el-form-item>
-        
-        <el-form-item label="描述">
+        <el-form-item label="描述" prop="description">
           <el-input
-            v-model="newRecipe.description"
+            v-model="form.description"
             type="textarea"
+            placeholder="请输入菜谱描述"
             :rows="3"
-            placeholder="请输入食谱描述"
           />
         </el-form-item>
-        
-        <el-form-item label="菜系">
-          <el-select v-model="newRecipe.cuisine" placeholder="选择菜系" style="width: 100%">
-            <el-option value="chinese" label="中餐" />
-            <el-option value="western" label="西餐" />
-            <el-option value="japanese" label="日料" />
-            <el-option value="korean" label="韩料" />
-            <el-option value="thai" label="泰式" />
-            <el-option value="italian" label="意式" />
+        <el-form-item label="难度" prop="difficulty">
+          <el-select v-model="form.difficulty" placeholder="请选择难度">
+            <el-option label="简单" value="easy" />
+            <el-option label="中等" value="medium" />
+            <el-option label="困难" value="hard" />
           </el-select>
         </el-form-item>
-        
-        <el-form-item label="难度">
-          <el-select v-model="newRecipe.difficulty" placeholder="选择难度" style="width: 100%">
-            <el-option value="简单" label="简单" />
-            <el-option value="中等" label="中等" />
-            <el-option value="困难" label="困难" />
-          </el-select>
+        <el-form-item label="准备时间" prop="prepTime">
+          <el-input-number v-model="form.prepTime" :min="0" :max="300" />
         </el-form-item>
-        
-        <el-form-item label="烹饪时间">
-          <el-input-number v-model="newRecipe.cookingTime" :min="1" style="width: 100%" />
-          <span class="time-unit">分钟</span>
+        <el-form-item label="烹饪时间" prop="cookTime">
+          <el-input-number v-model="form.cookTime" :min="0" :max="300" />
+        </el-form-item>
+        <el-form-item label="份量" prop="servings">
+          <el-input-number v-model="form.servings" :min="1" :max="20" />
         </el-form-item>
       </el-form>
       
       <template #footer>
-        <el-space>
-          <el-button @click="showAddModal = false">取消</el-button>
-          <el-button type="primary" @click="handleAddRecipe">添加</el-button>
-        </el-space>
+        <el-button @click="showCreateDialog = false">取消</el-button>
+        <el-button type="primary" :loading="isLoading" @click="handleCreate">
+          创建
+        </el-button>
       </template>
     </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, computed, reactive } from 'vue'
+import { useRouter } from 'vue-router'
+import { useAppStore } from '@/stores/app'
 import { ElMessage } from 'element-plus'
-import { Robot, Plus } from '@element-plus/icons-vue'
-import AppHeader from '@/components/layout/AppHeader.vue'
-import AppSider from '@/components/layout/AppSider.vue'
+import { Plus, Search } from '@element-plus/icons-vue'
+import type { FormInstance, FormRules } from 'element-plus'
+import type { Recipe, CreateRecipeForm } from '@/types'
 
-// 响应式数据
-const loading = ref(false)
-const showGenerateModal = ref(false)
-const showAddModal = ref(false)
+const router = useRouter()
+const appStore = useAppStore()
 
-const generateForm = reactive({
-  ingredients: [],
-  cuisine: '',
-  taste: '',
-  cookingTime: '',
-  requirements: ''
-})
+const searchQuery = ref('')
+const difficultyFilter = ref('')
+const showCreateDialog = ref(false)
+const isLoading = ref(false)
 
-const newRecipe = reactive({
+const formRef = ref<FormInstance>()
+
+const form = reactive<CreateRecipeForm>({
   title: '',
   description: '',
-  cuisine: '',
-  difficulty: '',
-  cookingTime: 30
+  difficulty: 'easy',
+  prepTime: 0,
+  cookTime: 0,
+  servings: 1,
+  tags: [],
+  ingredients: [],
+  steps: []
 })
 
-// 模拟食谱数据
-const recipes = ref([
-  {
-    id: 1,
-    title: '番茄炒蛋',
-    description: '经典家常菜，简单易做，营养丰富',
-    image: '/tomato-egg.jpg',
-    cuisine: '中餐',
-    difficulty: '简单',
-    cookingTime: 15,
-    author: {
-      name: '张厨师',
-      avatar: '/chef-avatar.jpg'
-    }
-  },
-  {
-    id: 2,
-    title: '红烧肉',
-    description: '肥而不腻，入口即化，传统美味',
-    image: '/braised-pork.jpg',
-    cuisine: '中餐',
-    difficulty: '中等',
-    cookingTime: 60,
-    author: {
-      name: '李大师',
-      avatar: '/master-avatar.jpg'
-    }
-  },
-  {
-    id: 3,
-    title: '意大利面',
-    description: '经典西式料理，口感丰富',
-    image: '/pasta.jpg',
-    cuisine: '西餐',
-    difficulty: '中等',
-    cookingTime: 25,
-    author: {
-      name: '王西厨',
-      avatar: '/western-chef.jpg'
-    }
+const rules: FormRules = {
+  title: [
+    { required: true, message: '请输入菜谱标题', trigger: 'blur' }
+  ],
+  description: [
+    { required: true, message: '请输入菜谱描述', trigger: 'blur' }
+  ],
+  difficulty: [
+    { required: true, message: '请选择难度', trigger: 'change' }
+  ]
+}
+
+const recipes = computed(() => appStore.recipes)
+
+const filteredRecipes = computed(() => {
+  let filtered = recipes.value
+  
+  if (searchQuery.value) {
+    filtered = filtered.filter(recipe =>
+      recipe.title.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+      recipe.description.toLowerCase().includes(searchQuery.value.toLowerCase())
+    )
   }
-])
-
-// 方法
-const viewRecipe = (recipe: any) => {
-  ElMessage.info(`查看食谱：${recipe.title}`)
-}
-
-const handleGenerateRecipe = () => {
-  ElMessage.success('AI 正在生成食谱，请稍候...')
-  showGenerateModal.value = false
-}
-
-const handleAddRecipe = () => {
-  ElMessage.success('食谱添加成功')
-  showAddModal.value = false
-}
+  
+  if (difficultyFilter.value) {
+    filtered = filtered.filter(recipe => recipe.difficulty === difficultyFilter.value)
+  }
+  
+  return filtered
+})
 
 const getDifficultyType = (difficulty: string) => {
   switch (difficulty) {
-    case '简单':
-      return 'success'
-    case '中等':
-      return 'warning'
-    case '困难':
-      return 'danger'
-    default:
-      return 'info'
+    case 'easy': return 'success'
+    case 'medium': return 'warning'
+    case 'hard': return 'danger'
+    default: return 'info'
   }
 }
 
-// 生命周期
-onMounted(() => {
-  // 加载食谱数据
-  loading.value = true
-  setTimeout(() => {
-    loading.value = false
-  }, 1000)
-})
+const getDifficultyText = (difficulty: string) => {
+  switch (difficulty) {
+    case 'easy': return '简单'
+    case 'medium': return '中等'
+    case 'hard': return '困难'
+    default: return '未知'
+  }
+}
+
+const viewRecipe = (recipe: Recipe) => {
+  appStore.setCurrentRecipe(recipe)
+  router.push(`/recipes/${recipe.id}`)
+}
+
+const handleSearch = () => {
+  // 搜索逻辑已在computed中处理
+}
+
+const resetForm = () => {
+  Object.assign(form, {
+    title: '',
+    description: '',
+    difficulty: 'easy',
+    prepTime: 0,
+    cookTime: 0,
+    servings: 1,
+    tags: [],
+    ingredients: [],
+    steps: []
+  })
+}
+
+const handleCreate = async () => {
+  if (!formRef.value) return
+  
+  try {
+    await formRef.value.validate()
+    isLoading.value = true
+    
+    await appStore.createRecipe(form)
+    ElMessage.success('菜谱创建成功')
+    showCreateDialog.value = false
+    resetForm()
+  } catch (error) {
+    console.error('创建菜谱失败:', error)
+  } finally {
+    isLoading.value = false
+  }
+}
 </script>
 
-<style lang="less" scoped>
+<style scoped>
 .recipes-page {
-  min-height: 100vh;
-  background: #f5f5f5;
-}
-
-.main-content {
-  margin-left: 240px;
-  margin-top: 64px;
-  padding: 24px;
-  
-  @media (max-width: 768px) {
-    margin-left: 0;
-    padding: 16px;
-  }
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 24px;
-  
-  h1 {
-    font-size: 28px;
-    font-weight: 700;
-    color: #333;
-    margin: 0 0 8px 0;
-  }
-  
-  p {
-    color: #666;
-    margin: 0;
-  }
 }
 
-.actions-bar {
+.page-header h1 {
+  margin: 0;
+  color: #333;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.filters {
+  display: flex;
+  gap: 16px;
   margin-bottom: 24px;
+}
+
+.search-input {
+  flex: 1;
+  max-width: 300px;
 }
 
 .recipes-grid {
@@ -338,80 +253,71 @@ onMounted(() => {
 
 .recipe-card {
   cursor: pointer;
-  transition: all 0.3s ease;
-  
-  &:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-  }
+  transition: transform 0.2s, box-shadow 0.2s;
+  border: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.recipe-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
 }
 
 .recipe-image {
   width: 100%;
   height: 200px;
+  object-fit: cover;
   border-radius: 8px;
+  margin-bottom: 16px;
 }
 
-.recipe-content {
-  padding: 16px 0;
-}
-
-.recipe-title {
+.recipe-content h3 {
+  margin: 0 0 8px 0;
+  color: #333;
   font-size: 18px;
   font-weight: 600;
-  color: #333;
-  margin: 0 0 8px 0;
 }
 
-.recipe-description {
+.recipe-content p {
+  margin: 0 0 12px 0;
   color: #666;
-  margin: 0 0 16px 0;
-  line-height: 1.5;
+  font-size: 14px;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .recipe-meta {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 12px;
-  
-  .author-name {
-    color: #666;
-    font-size: 14px;
-  }
+  flex-wrap: wrap;
 }
 
-.recipe-tags {
-  display: flex;
-  gap: 8px;
+.time {
+  color: #999;
+  font-size: 12px;
 }
 
-.time-unit {
-  margin-left: 8px;
-  color: #666;
-}
-
-// 移动端适配
 @media (max-width: 768px) {
-  .page-header h1 {
-    font-size: 24px;
+  .page-header {
+    flex-direction: column;
+    gap: 16px;
+    align-items: stretch;
   }
   
-  .actions-bar {
-    .el-space {
-      flex-direction: column;
-      width: 100%;
-      
-      .el-button {
-        width: 100%;
-        margin-bottom: 8px;
-      }
-    }
+  .filters {
+    flex-direction: column;
+  }
+  
+  .search-input {
+    max-width: none;
   }
   
   .recipes-grid {
     grid-template-columns: 1fr;
-    gap: 16px;
   }
 }
 </style>

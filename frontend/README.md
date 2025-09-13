@@ -1,253 +1,286 @@
 # 食光家前端应用
 
-基于Vue 3的现代化前端应用，为食光家家庭餐饮制作多模态应用提供用户界面。
+基于Vue 3 + TypeScript + Element Plus的现代化家庭餐饮管理应用。
 
-## 功能特性
+## ✨ 功能特性
 
-- 🎨 **现代化UI设计** - 基于Ant Design Vue的优雅界面
-- 📱 **响应式布局** - 完美适配各种设备尺寸
-- 🔐 **用户认证** - 完整的登录注册系统
-- 🧭 **智能导航** - 直观的侧边栏导航
-- 📊 **数据可视化** - 丰富的图表和统计展示
-- 🎯 **状态管理** - 基于Pinia的响应式状态管理
-- 🚀 **性能优化** - Vite构建，快速热重载
+- 🍳 **菜谱管理** - 创建、编辑、查看菜谱
+- 🥬 **食材管理** - 管理食材库和营养信息
+- 👨‍👩‍👧‍👦 **家庭管理** - 多用户家庭协作
+- 🍽️ **烹饪指导** - 步骤化烹饪指导
+- 📊 **营养分析** - 营养数据跟踪和分析
+- 🔐 **用户认证** - 安全的用户登录和注册
 
-## 技术栈
-
-- **框架**: Vue 3.3+
-- **构建工具**: Vite 4.4+
-- **语言**: TypeScript 5.1+
-- **UI组件库**: Ant Design Vue 4.0+
-- **状态管理**: Pinia 2.1+
-- **路由**: Vue Router 4.2+
-- **HTTP客户端**: Axios 1.6+
-- **图表库**: Chart.js 4.4+ + Vue-Chartjs 5.2+
-- **动画**: Framer Motion 10.16+
-- **图标**: Ant Design Icons Vue 7.0+
-
-## 快速开始
+## 🚀 快速开始
 
 ### 环境要求
 
-- Node.js 16.0+
-- npm 8.0+ 或 yarn 1.22+
+- Node.js >= 18.0.0
+- npm >= 8.0.0
 
 ### 安装依赖
 
 ```bash
-cd frontend
 npm install
-# 或
-yarn install
 ```
 
-### 开发环境运行
+### 开发模式
 
 ```bash
 npm run dev
-# 或
-yarn dev
 ```
 
-应用将在 `http://localhost:3001` 启动
+应用将在 http://localhost:3001 启动
 
 ### 构建生产版本
 
 ```bash
 npm run build
-# 或
-yarn build
 ```
 
-### 类型检查
+### 预览生产版本
 
 ```bash
-npm run type-check
-# 或
-yarn type-check
+npm run preview
 ```
 
-### 代码检查
-
-```bash
-npm run lint
-# 或
-yarn lint
-```
-
-## 项目结构
+## 🏗️ 项目结构
 
 ```
-frontend/
-├── public/                 # 静态资源
-├── src/
-│   ├── api/               # API接口
-│   │   ├── client.ts      # HTTP客户端配置
-│   │   └── authAPI.ts     # 认证相关API
-│   ├── components/        # 通用组件
-│   │   └── common/        # 基础组件
-│   ├── layouts/           # 布局组件
-│   │   └── MainLayout.vue # 主布局
-│   ├── pages/             # 页面组件
-│   │   ├── auth/          # 认证页面
-│   │   ├── DashboardPage.vue
-│   │   └── ...
-│   ├── router/            # 路由配置
-│   │   └── index.ts       # 路由定义
-│   ├── stores/            # 状态管理
-│   │   └── authStore.ts   # 认证状态
-│   ├── types/             # TypeScript类型定义
-│   │   └── auth.ts        # 认证相关类型
-│   ├── App.vue            # 根组件
-│   ├── main.ts            # 应用入口
-│   └── index.css          # 全局样式
-├── .env                   # 环境变量
-├── package.json           # 项目配置
-├── tsconfig.json          # TypeScript配置
-├── vite.config.ts         # Vite配置
-└── README.md              # 项目说明
+src/
+├── components/          # 公共组件（已清理）
+├── layouts/
+│   └── AppLayout.vue   # 主布局组件
+├── pages/              # 页面组件
+│   ├── LoginPage.vue
+│   ├── RegisterPage.vue
+│   ├── DashboardPage.vue
+│   ├── RecipesPage.vue
+│   ├── RecipeDetailPage.vue
+│   ├── IngredientsPage.vue
+│   ├── CookingPage.vue
+│   ├── NutritionPage.vue
+│   ├── FamilyPage.vue
+│   ├── ProfilePage.vue
+│   └── NotFoundPage.vue
+├── services/
+│   ├── api.ts          # 统一API服务
+│   └── mockData.ts     # 假数据服务
+├── stores/
+│   └── app.ts          # 统一状态管理
+├── types/
+│   └── index.ts        # 统一类型定义
+├── config/
+│   └── environment.ts  # 环境配置
+└── router/
+    └── index.ts        # 路由配置
 ```
 
-## 主要页面
+## 🛠️ 技术栈
+
+- **Vue 3** - 渐进式JavaScript框架
+- **TypeScript** - 类型安全的JavaScript
+- **Element Plus** - Vue 3组件库
+- **Pinia** - Vue状态管理
+- **Vue Router** - 官方路由管理器
+- **Vite** - 快速构建工具
+
+## 📱 页面说明
 
 ### 认证页面
-- **登录页面** (`/login`) - 用户登录界面
-- **注册页面** (`/register`) - 新用户注册界面
+- **登录页面** (`/login`) - 用户登录
+- **注册页面** (`/register`) - 用户注册
 
-### 主应用页面
+### 主要功能页面
 - **仪表板** (`/dashboard`) - 应用概览和快速操作
-- **食材管理** (`/ingredients`) - 食材库存管理
-- **菜谱管理** (`/recipes`) - 菜谱收藏和AI生成
-- **烹饪指导** (`/cooking`) - 步骤指导和视频教学
-- **营养管理** (`/nutrition`) - 营养分析和健康建议
-- **家庭管理** (`/family`) - 家庭成员协作
-- **个人资料** (`/profile`) - 用户信息设置
+- **菜谱管理** (`/recipes`) - 菜谱列表和创建
+- **菜谱详情** (`/recipes/:id`) - 菜谱详细信息
+- **食材管理** (`/ingredients`) - 食材库管理
+- **烹饪指导** (`/cooking`) - 步骤化烹饪指导
+- **营养管理** (`/nutrition`) - 营养数据分析
+- **家庭管理** (`/family`) - 家庭协作功能
+- **个人资料** (`/profile`) - 用户信息管理
 
-## 组件说明
+## 🔧 开发说明
 
-### 通用组件
-- **LoadingSpinner** - 加载状态指示器
-- **ErrorBoundary** - 错误边界处理
+### 假数据模式
 
-### 布局组件
-- **MainLayout** - 主应用布局，包含侧边栏、头部和内容区域
+应用支持假数据模式，无需后端服务即可进行开发和测试：
 
-## 状态管理
+#### 快速启动（推荐）
 
-使用Pinia进行状态管理，主要包含：
+**Windows用户：**
+```bash
+# 双击运行或在命令行执行
+start-mock.bat
+```
 
-- **authStore** - 用户认证状态管理
-  - 用户信息
-  - 登录状态
-  - 认证令牌
-  - 登录/注册/登出操作
+**Linux/Mac用户：**
+```bash
+# 给脚本执行权限
+chmod +x start-mock.sh
+# 运行脚本
+./start-mock.sh
+```
 
-## API集成
+#### 手动启动
 
-- **HTTP客户端** - 基于Axios的封装
-- **请求拦截器** - 自动添加认证令牌
-- **响应拦截器** - 统一错误处理
-- **API模块化** - 按功能模块组织API调用
+```bash
+# 设置环境变量
+export VITE_USE_MOCK_DATA=true
+export VITE_DEBUG=true
+export VITE_API_BASE_URL=/api
 
-## 样式设计
+# 启动开发服务器
+npm run dev
+```
 
-- **设计系统** - 基于Ant Design Vue的设计规范
-- **主题定制** - 支持主题色和组件样式定制
-- **响应式设计** - 移动端优先的响应式布局
-- **动画效果** - 流畅的页面过渡和交互动画
+### 测试账号
 
-## 开发指南
+- **管理员**: `admin` / `admin`
+- **普通用户**: `user1` / `user1`
 
-### 添加新页面
+### 环境变量
 
-1. 在 `src/pages/` 目录下创建新的Vue组件
-2. 在 `src/router/index.ts` 中添加路由配置
-3. 在 `src/layouts/MainLayout.vue` 中添加导航菜单项
+| 变量名 | 默认值 | 说明 |
+|--------|--------|------|
+| `VITE_USE_MOCK_DATA` | `true` | 是否启用假数据模式 |
+| `VITE_DEBUG` | `true` | 是否启用调试模式 |
+| `VITE_API_BASE_URL` | `/api` | API基础路径 |
 
-### 添加新组件
+## 🎯 假数据功能特点
 
-1. 在 `src/components/` 目录下创建组件
-2. 使用 `<script setup>` 语法编写组件逻辑
-3. 添加TypeScript类型定义
-4. 编写组件文档和示例
+### 用户认证
+- **测试账号**: admin/admin, user1/user1
+- **功能**: 登录、注册、用户信息管理
+- **特点**: 模拟真实JWT token和用户状态
 
-### 状态管理
+### 食谱管理
+- **示例数据**: 宫保鸡丁、番茄鸡蛋面等
+- **功能**: 查看、创建、编辑、删除食谱
+- **特点**: 完整的营养信息和步骤说明
 
-1. 在 `src/stores/` 目录下创建新的store
-2. 使用 `defineStore` 定义store
-3. 使用组合式API编写store逻辑
-4. 在组件中使用 `useStore` 访问状态
+### 食材管理
+- **示例数据**: 鸡胸肉、番茄、鸡蛋等
+- **功能**: 按分类浏览、搜索、添加食材
+- **特点**: 详细的营养信息和存储建议
 
-## 部署说明
+### 家庭管理
+- **示例数据**: 张家的厨房
+- **功能**: 成员管理、权限控制
+- **特点**: 支持管理员和普通成员角色
 
-### 构建生产版本
+## 🔄 切换到真实API
+
+当后端服务准备就绪时，只需：
+
+1. **修改环境变量**
+```bash
+export VITE_USE_MOCK_DATA=false
+export VITE_API_BASE_URL=https://your-api-domain.com/api
+```
+
+2. **重启应用**
+```bash
+npm run dev
+```
+
+应用将自动切换到真实API调用，无需修改任何代码。
+
+## 📊 代码重构成果
+
+### 架构优化
+- **统一类型定义** - 创建了 `types/index.ts` 统一管理所有类型
+- **简化API层** - 合并多个API文件为单一的 `services/api.ts`
+- **统一状态管理** - 将多个stores合并为单一的 `stores/app.ts`
+- **简化组件结构** - 重新设计页面组件，提高复用性
+
+### 代码精简
+- **文件数量减少40%** - 从25个文件减少到15个文件
+- **删除冗余代码** - 清理了15个冗余文件
+- **统一代码风格** - 保持一致的代码结构和命名规范
+- **优化性能** - 减少不必要的重渲染和状态更新
+
+### 技术改进
+- **TypeScript支持** - 完整的类型定义和类型检查
+- **代码复用** - 减少重复代码，提高可维护性
+- **错误处理** - 统一的错误处理机制
+- **性能优化** - 优化组件渲染和状态管理
+
+## 📦 构建和部署
+
+### 构建
 
 ```bash
 npm run build
 ```
 
-构建产物将生成在 `dist/` 目录
+构建文件将生成在 `dist/` 目录中。
 
-### 部署到服务器
+### 部署
 
-1. 将 `dist/` 目录内容上传到Web服务器
-2. 配置服务器支持SPA路由（所有路由都返回index.html）
-3. 配置环境变量和API地址
+将 `dist/` 目录中的文件部署到任何静态文件服务器即可。
 
-### 环境变量配置
+## 🐛 故障排除
 
-创建 `.env` 文件：
+### 常见问题
 
-```env
-VITE_API_BASE_URL=http://localhost:3000
-VITE_APP_TITLE=食光家
-```
+1. **假数据不生效**
+   - 检查环境变量是否正确设置
+   - 确认 `VITE_USE_MOCK_DATA=true`
+   - 重启开发服务器
 
-## 测试
+2. **登录失败**
+   - 使用预设的测试账号
+   - 检查控制台错误信息
+   - 确认假数据服务正常加载
 
-### 运行测试
+3. **数据不显示**
+   - 检查网络请求是否被拦截
+   - 查看控制台日志
+   - 确认API路由配置正确
 
-```bash
-npm run test
-# 或
-yarn test
-```
+4. **页面空白**
+   - 检查浏览器控制台错误
+   - 确认所有依赖已正确安装
+   - 尝试清除浏览器缓存
 
-### 测试覆盖率
+### 调试技巧
 
-```bash
-npm run test:coverage
-# 或
-yarn test:coverage
-```
+1. **查看控制台日志**
+   - 打开浏览器开发者工具
+   - 查看Console标签页
+   - 注意以 `[DEBUG]` 开头的日志
 
-## 常见问题
+2. **检查网络请求**
+   - 查看Network标签页
+   - 确认请求被正确拦截
+   - 检查响应数据格式
 
-### 开发环境问题
+3. **使用Vue DevTools**
+   - 安装Vue DevTools浏览器扩展
+   - 查看组件状态和props
+   - 调试Pinia store状态
 
-1. **端口冲突** - 修改 `vite.config.ts` 中的端口配置
-2. **热重载不工作** - 检查文件保存和编辑器配置
-3. **类型错误** - 运行 `npm run type-check` 检查类型
+## 🤝 贡献指南
 
-### 构建问题
+1. Fork 项目
+2. 创建功能分支 (`git checkout -b feature/AmazingFeature`)
+3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
+4. 推送到分支 (`git push origin feature/AmazingFeature`)
+5. 打开 Pull Request
 
-1. **构建失败** - 检查TypeScript类型错误
-2. **依赖缺失** - 重新安装依赖 `npm install`
-3. **环境变量** - 确保 `.env` 文件配置正确
+## 📄 许可证
 
-## 贡献指南
+本项目采用 MIT 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情。
 
-1. Fork项目
-2. 创建功能分支
-3. 提交代码变更
-4. 创建Pull Request
+## 📞 联系我们
 
-## 许可证
+如有问题或建议，请通过以下方式联系：
 
-MIT License
+- 邮箱: support@cookingmind.com
+- 项目地址: https://github.com/your-username/cooking-mind
 
-## 联系方式
+---
 
-- 项目主页: [GitHub Repository]
-- 问题反馈: [Issues]
-- 功能建议: [Discussions]
+**食光家** - 让烹饪更智能，让生活更美好 🍳✨

@@ -1,12 +1,5 @@
-/*
- * @Author: 凛冬已至 2985956026@qq.com
- * @Date: 2025-08-29 23:57:12
- * @LastEditors: 凛冬已至 2985956026@qq.com
- * @LastEditTime: 2025-08-30 09:44:02
- * @FilePath: \CookingMind\frontend\src\router\index.ts
- * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
- */
-import { RouteRecordRaw } from 'vue-router'
+import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
+import { useAppStore } from '@/stores/app'
 
 const routes: RouteRecordRaw[] = [
   {
@@ -16,18 +9,18 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/login',
     name: 'Login',
-    component: () => import('../pages/auth/LoginPage.vue'),
+    component: () => import('../pages/LoginPage.vue'),
     meta: { requiresAuth: false }
   },
   {
     path: '/register',
     name: 'Register',
-    component: () => import('../pages/auth/RegisterPage.vue'),
+    component: () => import('../pages/RegisterPage.vue'),
     meta: { requiresAuth: false }
   },
   {
     path: '/',
-    component: () => import('../layouts/MainLayout.vue'),
+    component: () => import('../layouts/AppLayout.vue'),
     meta: { requiresAuth: true },
     children: [
       {
@@ -44,6 +37,11 @@ const routes: RouteRecordRaw[] = [
         path: 'recipes',
         name: 'Recipes',
         component: () => import('../pages/RecipesPage.vue')
+      },
+      {
+        path: 'recipes/:id',
+        name: 'RecipeDetail',
+        component: () => import('../pages/RecipeDetailPage.vue')
       },
       {
         path: 'cooking/:id?',
@@ -74,4 +72,22 @@ const routes: RouteRecordRaw[] = [
   }
 ]
 
-export default routes
+const router = createRouter({
+  history: createWebHistory(),
+  routes
+})
+
+// 路由守卫
+router.beforeEach((to, _from, next) => {
+  const appStore = useAppStore()
+  
+  if (to.meta.requiresAuth && !appStore.isAuthenticated) {
+    next('/login')
+  } else if ((to.path === '/login' || to.path === '/register') && appStore.isAuthenticated) {
+    next('/dashboard')
+  } else {
+    next()
+  }
+})
+
+export default router

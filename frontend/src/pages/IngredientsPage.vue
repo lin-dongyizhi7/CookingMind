@@ -1,348 +1,317 @@
 <template>
   <div class="ingredients-page">
-    <AppHeader />
-    <AppSider />
-    
-    <div class="main-content">
-      <div class="page-header">
-        <h1>食材管理</h1>
-        <p>管理您的食材库存，支持拍照识别</p>
-      </div>
-      
-      <div class="actions-bar">
-        <el-space>
-          <el-button type="primary" @click="showAddModal = true">
-            <el-icon><Plus /></el-icon>
-            添加食材
-          </el-button>
-          <el-button @click="showRecognizeModal = true">
-            <el-icon><Camera /></el-icon>
-            拍照识别
-          </el-button>
-        </el-space>
-      </div>
-      
-      <el-table
-        :data="ingredients"
-        :loading="loading"
-        class="ingredients-table"
-      >
-        <el-table-column prop="image" label="图片" width="80">
-          <template #default="{ record }">
-            <el-image
-              :src="record.image || '/placeholder-ingredient.jpg'"
-              :preview-src-list="[record.image || '/placeholder-ingredient.jpg']"
-              fit="cover"
-              class="ingredient-image"
-            />
-          </template>
-        </el-table-column>
-        
-        <el-table-column prop="name" label="名称" />
-        <el-table-column prop="category" label="分类" />
-        <el-table-column prop="quantity" label="数量" />
-        <el-table-column prop="freshness" label="新鲜度">
-          <template #default="{ record }">
-            <el-tag :type="getFreshnessType(record.freshness)">
-              {{ record.freshness }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        
-        <el-table-column label="操作" width="150">
-          <template #default="{ record }">
-            <el-space>
-              <el-button type="primary" link size="small" @click="editIngredient(record)">
-                编辑
-              </el-button>
-              <el-button type="danger" link size="small" @click="deleteIngredient(record)">
-                删除
-              </el-button>
-            </el-space>
-          </template>
-        </el-table-column>
-      </el-table>
+    <div class="page-header">
+      <h1>食材管理</h1>
+      <el-button type="primary" @click="showCreateDialog = true">
+        <el-icon><Plus /></el-icon>
+        添加食材
+      </el-button>
     </div>
     
-    <!-- 添加食材模态框 -->
+    <div class="filters">
+      <el-input
+        v-model="searchQuery"
+        placeholder="搜索食材..."
+        :prefix-icon="Search"
+        class="search-input"
+        @input="handleSearch"
+      />
+      <el-select v-model="categoryFilter" placeholder="分类" clearable>
+        <el-option
+          v-for="category in categories"
+          :key="category"
+          :label="category"
+          :value="category"
+        />
+      </el-select>
+    </div>
+    
+    <div class="ingredients-grid">
+      <el-card
+        v-for="ingredient in filteredIngredients"
+        :key="ingredient.id"
+        class="ingredient-card"
+        @click="viewIngredient(ingredient)"
+      >
+        <div class="ingredient-content">
+          <div class="ingredient-info">
+            <h3>{{ ingredient.name }}</h3>
+            <p class="category">{{ ingredient.category }}</p>
+            <div class="nutrition">
+              <span>{{ ingredient.nutrition.calories }}卡路里</span>
+              <span>{{ ingredient.nutrition.protein }}g蛋白质</span>
+            </div>
+            <div class="storage">
+              <el-tag size="small">{{ ingredient.storage }}</el-tag>
+              <span class="shelf-life">保质期{{ ingredient.shelfLife }}天</span>
+            </div>
+          </div>
+        </div>
+      </el-card>
+    </div>
+    
+    <!-- 创建食材对话框 -->
     <el-dialog
-      v-model="showAddModal"
+      v-model="showCreateDialog"
       title="添加食材"
       width="500px"
+      @close="resetForm"
     >
-      <el-form :model="newIngredient" label-width="80px">
-        <el-form-item label="食材名称">
-          <el-input v-model="newIngredient.name" placeholder="请输入食材名称" />
+      <el-form ref="formRef" :model="form" :rules="rules" label-width="80px">
+        <el-form-item label="名称" prop="name">
+          <el-input v-model="form.name" placeholder="请输入食材名称" />
         </el-form-item>
-        
-        <el-form-item label="分类">
-          <el-select v-model="newIngredient.category" placeholder="选择分类" style="width: 100%">
-            <el-option value="vegetables" label="蔬菜" />
-            <el-option value="fruits" label="水果" />
-            <el-option value="meat" label="肉类" />
-            <el-option value="seafood" label="海鲜" />
-            <el-option value="dairy" label="乳制品" />
-            <el-option value="grains" label="谷物" />
-            <el-option value="spices" label="调味料" />
-          </el-select>
+        <el-form-item label="分类" prop="category">
+          <el-input v-model="form.category" placeholder="请输入食材分类" />
         </el-form-item>
-        
-        <el-form-item label="数量">
-          <el-input-number v-model="newIngredient.quantity" :min="0" style="width: 100%" />
+        <el-form-item label="单位" prop="unit">
+          <el-input v-model="form.unit" placeholder="请输入单位" />
         </el-form-item>
-        
-        <el-form-item label="单位">
-          <el-select v-model="newIngredient.unit" placeholder="选择单位" style="width: 100%">
-            <el-option value="个" label="个" />
-            <el-option value="斤" label="斤" />
-            <el-option value="克" label="克" />
-            <el-option value="包" label="包" />
-            <el-option value="瓶" label="瓶" />
-          </el-select>
+        <el-form-item label="存储方式" prop="storage">
+          <el-input v-model="form.storage" placeholder="请输入存储方式" />
         </el-form-item>
-        
-        <el-form-item label="新鲜度">
-          <el-select v-model="newIngredient.freshness" placeholder="选择新鲜度" style="width: 100%">
-            <el-option value="新鲜" label="新鲜" />
-            <el-option value="一般" label="一般" />
-            <el-option value="需要处理" label="需要处理" />
-          </el-select>
+        <el-form-item label="保质期" prop="shelfLife">
+          <el-input-number v-model="form.shelfLife" :min="1" :max="365" />
         </el-form-item>
-        
-        <el-form-item label="过期时间">
-          <el-date-picker
-            v-model="newIngredient.expiryDate"
-            type="date"
-            placeholder="选择过期时间"
-            style="width: 100%"
-          />
+        <el-form-item label="卡路里" prop="nutrition.calories">
+          <el-input-number v-model="form.nutrition.calories" :min="0" />
+        </el-form-item>
+        <el-form-item label="蛋白质" prop="nutrition.protein">
+          <el-input-number v-model="form.nutrition.protein" :min="0" />
+        </el-form-item>
+        <el-form-item label="碳水化合物" prop="nutrition.carbs">
+          <el-input-number v-model="form.nutrition.carbs" :min="0" />
+        </el-form-item>
+        <el-form-item label="脂肪" prop="nutrition.fat">
+          <el-input-number v-model="form.nutrition.fat" :min="0" />
         </el-form-item>
       </el-form>
       
       <template #footer>
-        <el-space>
-          <el-button @click="showAddModal = false">取消</el-button>
-          <el-button type="primary" @click="handleAddIngredient">确定</el-button>
-        </el-space>
-      </template>
-    </el-dialog>
-    
-    <!-- 拍照识别模态框 -->
-    <el-dialog
-      v-model="showRecognizeModal"
-      title="拍照识别食材"
-      width="600px"
-    >
-      <div class="recognize-content">
-        <div class="camera-area">
-          <el-button type="primary" size="large">
-            <el-icon><Camera /></el-icon>
-            拍照识别
-          </el-button>
-          <p class="camera-tip">点击拍照，AI将自动识别食材</p>
-        </div>
-        
-        <div class="recognize-result" v-if="recognizeResult">
-          <h4>识别结果：</h4>
-          <el-tag v-for="item in recognizeResult" :key="item.name" class="recognize-tag">
-            {{ item.name }} - {{ item.confidence }}%
-          </el-tag>
-        </div>
-      </div>
-      
-      <template #footer>
-        <el-button @click="showRecognizeModal = false">关闭</el-button>
+        <el-button @click="showCreateDialog = false">取消</el-button>
+        <el-button type="primary" :loading="isLoading" @click="handleCreate">
+          添加
+        </el-button>
       </template>
     </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, computed, reactive } from 'vue'
+import { useAppStore } from '@/stores/app'
 import { ElMessage } from 'element-plus'
-import { Plus, Camera } from '@element-plus/icons-vue'
-import AppHeader from '@/components/layout/AppHeader.vue'
-import AppSider from '@/components/layout/AppSider.vue'
+import { Plus, Search } from '@element-plus/icons-vue'
+import type { FormInstance, FormRules } from 'element-plus'
+import type { Ingredient, CreateIngredientForm } from '@/types'
 
-// 响应式数据
-const loading = ref(false)
-const showAddModal = ref(false)
-const showRecognizeModal = ref(false)
-const recognizeResult = ref(null)
+const appStore = useAppStore()
 
-const newIngredient = reactive({
+const searchQuery = ref('')
+const categoryFilter = ref('')
+const showCreateDialog = ref(false)
+const isLoading = ref(false)
+
+const formRef = ref<FormInstance>()
+
+const form = reactive<CreateIngredientForm>({
   name: '',
   category: '',
-  quantity: 1,
-  unit: '个',
-  freshness: '新鲜',
-  expiryDate: null
+  unit: '',
+  nutrition: {
+    calories: 0,
+    protein: 0,
+    carbs: 0,
+    fat: 0
+  },
+  storage: '',
+  shelfLife: 1
 })
 
-// 模拟食材数据
-const ingredients = ref([
-  {
-    id: 1,
-    name: '番茄',
-    category: '蔬菜',
-    quantity: 5,
-    unit: '个',
-    freshness: '新鲜',
-    expiryDate: '2024-01-15',
-    image: '/tomato.jpg'
-  },
-  {
-    id: 2,
-    name: '鸡蛋',
-    category: '蛋类',
-    quantity: 12,
-    unit: '个',
-    freshness: '新鲜',
-    expiryDate: '2024-01-20',
-    image: '/egg.jpg'
-  },
-  {
-    id: 3,
-    name: '鸡肉',
-    category: '肉类',
-    quantity: 500,
-    unit: '克',
-    freshness: '一般',
-    expiryDate: '2024-01-12',
-    image: '/chicken.jpg'
+const rules: FormRules = {
+  name: [
+    { required: true, message: '请输入食材名称', trigger: 'blur' }
+  ],
+  category: [
+    { required: true, message: '请输入食材分类', trigger: 'blur' }
+  ],
+  unit: [
+    { required: true, message: '请输入单位', trigger: 'blur' }
+  ],
+  storage: [
+    { required: true, message: '请输入存储方式', trigger: 'blur' }
+  ]
+}
+
+const ingredients = computed(() => appStore.ingredients)
+const categories = computed(() => appStore.categories)
+
+const filteredIngredients = computed(() => {
+  let filtered = ingredients.value
+  
+  if (searchQuery.value) {
+    filtered = filtered.filter(ingredient =>
+      ingredient.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+      ingredient.category.toLowerCase().includes(searchQuery.value.toLowerCase())
+    )
   }
-])
-
-// 方法
-const handleAddIngredient = () => {
-  ElMessage.success('食材添加成功')
-  showAddModal.value = false
-}
-
-const editIngredient = (ingredient: any) => {
-  ElMessage.info(`编辑食材：${ingredient.name}`)
-}
-
-const deleteIngredient = (ingredient: any) => {
-  ElMessage.info(`删除食材：${ingredient.name}`)
-}
-
-const getFreshnessType = (freshness: string) => {
-  switch (freshness) {
-    case '新鲜':
-      return 'success'
-    case '一般':
-      return 'warning'
-    case '需要处理':
-      return 'danger'
-    default:
-      return 'info'
+  
+  if (categoryFilter.value) {
+    filtered = filtered.filter(ingredient => ingredient.category === categoryFilter.value)
   }
-}
-
-// 生命周期
-onMounted(() => {
-  // 加载食材数据
-  loading.value = true
-  setTimeout(() => {
-    loading.value = false
-  }, 1000)
+  
+  return filtered
 })
+
+const viewIngredient = (ingredient: Ingredient) => {
+  appStore.setCurrentIngredient(ingredient)
+  // 可以添加查看详情的逻辑
+}
+
+const handleSearch = () => {
+  // 搜索逻辑已在computed中处理
+}
+
+const resetForm = () => {
+  Object.assign(form, {
+    name: '',
+    category: '',
+    unit: '',
+    nutrition: {
+      calories: 0,
+      protein: 0,
+      carbs: 0,
+      fat: 0
+    },
+    storage: '',
+    shelfLife: 1
+  })
+}
+
+const handleCreate = async () => {
+  if (!formRef.value) return
+  
+  try {
+    await formRef.value.validate()
+    isLoading.value = true
+    
+    await appStore.createIngredient(form)
+    ElMessage.success('食材添加成功')
+    showCreateDialog.value = false
+    resetForm()
+  } catch (error) {
+    console.error('添加食材失败:', error)
+  } finally {
+    isLoading.value = false
+  }
+}
 </script>
 
-<style lang="less" scoped>
+<style scoped>
 .ingredients-page {
-  min-height: 100vh;
-  background: #f5f5f5;
-}
-
-.main-content {
-  margin-left: 240px;
-  margin-top: 64px;
-  padding: 24px;
-  
-  @media (max-width: 768px) {
-    margin-left: 0;
-    padding: 16px;
-  }
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .page-header {
-  margin-bottom: 24px;
-  
-  h1 {
-    font-size: 28px;
-    font-weight: 700;
-    color: #333;
-    margin: 0 0 8px 0;
-  }
-  
-  p {
-    color: #666;
-    margin: 0;
-  }
-}
-
-.actions-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 24px;
 }
 
-.ingredients-table {
-  background: white;
-  border-radius: 8px;
+.page-header h1 {
+  margin: 0;
+  color: #333;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.filters {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.search-input {
+  flex: 1;
+  max-width: 300px;
+}
+
+.ingredients-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 24px;
+}
+
+.ingredient-card {
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  border: none;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-.ingredient-image {
-  width: 50px;
-  height: 50px;
-  border-radius: 4px;
+.ingredient-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
 }
 
-.recognize-content {
-  text-align: center;
-  padding: 20px;
+.ingredient-content {
+  padding: 16px;
 }
 
-.camera-area {
-  margin-bottom: 24px;
-  
-  .camera-tip {
-    color: #666;
-    margin-top: 12px;
-  }
+.ingredient-info h3 {
+  margin: 0 0 8px 0;
+  color: #333;
+  font-size: 18px;
+  font-weight: 600;
 }
 
-.recognize-result {
-  text-align: left;
-  
-  h4 {
-    margin-bottom: 12px;
-    color: #333;
-  }
-  
-  .recognize-tag {
-    margin-right: 8px;
-    margin-bottom: 8px;
-  }
+.category {
+  margin: 0 0 12px 0;
+  color: #666;
+  font-size: 14px;
 }
 
-// 移动端适配
+.nutrition {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.nutrition span {
+  color: #999;
+  font-size: 12px;
+}
+
+.storage {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.shelf-life {
+  color: #999;
+  font-size: 12px;
+}
+
 @media (max-width: 768px) {
-  .page-header h1 {
-    font-size: 24px;
+  .page-header {
+    flex-direction: column;
+    gap: 16px;
+    align-items: stretch;
   }
   
-  .actions-bar {
-    .el-space {
-      flex-direction: column;
-      width: 100%;
-      
-      .el-button {
-        width: 100%;
-        margin-bottom: 8px;
-      }
-    }
+  .filters {
+    flex-direction: column;
+  }
+  
+  .search-input {
+    max-width: none;
+  }
+  
+  .ingredients-grid {
+    grid-template-columns: 1fr;
   }
 }
 </style>

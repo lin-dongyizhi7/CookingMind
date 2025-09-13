@@ -1,24 +1,30 @@
-/*
- * @Author: 凛冬已至 2985956026@qq.com
- * @Date: 2025-08-29 23:56:53
- * @LastEditors: 凛冬已至 2985956026@qq.com
- * @LastEditTime: 2025-08-30 09:33:57
- * @FilePath: \CookingMind\frontend\src\main.ts
- * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
- */
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
-import zhCn from 'element-plus/dist/locale/zh-cn.mjs'
 
 import App from './App.vue'
 import router from './router'
 
-import './style.css'
-
 const app = createApp(App)
+
+// 全局错误处理
+app.config.errorHandler = (err, _instance, info) => {
+  console.error('Vue应用错误:', err)
+  console.error('错误信息:', info)
+}
+
+// 全局Promise错误处理
+window.addEventListener('unhandledrejection', (event) => {
+  console.error('未处理的Promise错误:', event.reason)
+  event.preventDefault()
+})
+
+// 全局JavaScript错误处理
+window.addEventListener('error', (event) => {
+  console.error('JavaScript错误:', event.error)
+})
 
 // 注册所有图标
 for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
@@ -27,8 +33,6 @@ for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
 
 app.use(createPinia())
 app.use(router)
-app.use(ElementPlus, {
-  locale: zhCn,
-})
+app.use(ElementPlus)
 
 app.mount('#app')

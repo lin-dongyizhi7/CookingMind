@@ -1,23 +1,27 @@
 <template>
   <div id="app">
-    <LoadingSpinner v-if="isLoading" />
-    <router-view v-else />
+    <router-view />
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
-import { useAuthStore } from '@/stores/authStore'
-import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
+import { onMounted } from 'vue'
+import { useAppStore } from '@/stores/app'
+import { ElMessage } from 'element-plus'
 
-const authStore = useAuthStore()
-
-const isLoading = computed(() => authStore.isLoading)
+const appStore = useAppStore()
 
 onMounted(async () => {
-  // 检查用户是否已登录
-  if (localStorage.getItem('token')) {
-    await authStore.getCurrentUser()
+  try {
+    // 检查用户是否已登录
+    if (localStorage.getItem('token')) {
+      await appStore.getCurrentUser()
+    }
+    // 初始化数据
+    await appStore.initializeData()
+  } catch (error) {
+    console.error('应用初始化失败:', error)
+    ElMessage.error('应用初始化失败，请刷新页面重试')
   }
 })
 </script>
@@ -28,5 +32,14 @@ onMounted(async () => {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   height: 100vh;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
 }
 </style>
